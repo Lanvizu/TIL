@@ -6,13 +6,13 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-const char* filePath = "../Raw_Image/lena.img"; // ¿øº» ÆÄÀÏ À§Ä¡
-const char* outputFilePath = "../Raw_Image/lenaOutput.img"; // Ãâ·Â ÆÄÀÏ À§Ä¡
+const char* filePath = "../Raw_Image/lena.img"; // ì›ë³¸ íŒŒì¼ ìœ„ì¹˜
+const char* outputFilePath = "../Raw_Image/lenaOutput.img"; // ì¶œë ¥ íŒŒì¼ ìœ„ì¹˜
 
-unsigned char* img_org = NULL; //¿øº» ÀÌ¹ÌÁö
-unsigned char* img_sav = NULL; //Ãâ·Â ÀÌ¹ÌÁö
+unsigned char* img_org = NULL; //ì›ë³¸ ì´ë¯¸ì§€
+unsigned char* img_sav = NULL; //ì¶œë ¥ ì´ë¯¸ì§€
 
-//¿øº»,Ãâ·Â ÆÄÀÏ
+//ì›ë³¸,ì¶œë ¥ íŒŒì¼
 FILE* inFilePtr;
 FILE* outFilePtr;
 
@@ -34,63 +34,63 @@ int main(void) {
     return 0;
 }
 
-//¿øº» ÆÄÀÏ ·Îµå
+//ì›ë³¸ íŒŒì¼ ë¡œë“œ
 void loadFile() {
-    // µ¿Àû ÇÒ´ç
+    // ë™ì  í• ë‹¹
     img_org = (unsigned char*)malloc(sizeof(unsigned char) * IMAGE_SIZE);
     img_sav = (unsigned char*)malloc(sizeof(unsigned char) * IMAGE_SIZE);
     if (img_sav == NULL || img_org == NULL) {
-        printf("¸Þ¸ð¸® ÇÒ´ç ½ÇÆÐ\n");
+        printf("ë©”ëª¨ë¦¬ í• ë‹¹ ì‹¤íŒ¨\n");
         exit(1);
     }
-    // ÆÄÀÏ ¿­±â
+    // íŒŒì¼ ì—´ê¸°
     inFilePtr = fopen(filePath, "rb");
     if (inFilePtr == NULL) {
-        perror("ÆÄÀÏ ¿­±â ½ÇÆÐ");
+        perror("íŒŒì¼ ì—´ê¸° ì‹¤íŒ¨");
         exit(1);
     }
 
-    //ÀÐ¾î¿Â ÆÄÀÏ ¿øº»(img_org)¿¡ ÀúÀå
+    //ì½ì–´ì˜¨ íŒŒì¼ ì›ë³¸(img_org)ì— ì €ìž¥
     fread(img_org, sizeof(unsigned char), IMAGE_SIZE, inFilePtr);
     
     fclose(inFilePtr);
 }
-// ÆÄÀÏ ÀúÀå
+// íŒŒì¼ ì €ìž¥
 void saveFile() {
     outFilePtr = fopen(outputFilePath, "wb");
     if (outFilePtr == NULL) {
-        perror("ÆÄÀÏ ¿­±â ½ÇÆÐ");
+        perror("íŒŒì¼ ì—´ê¸° ì‹¤íŒ¨");
         exit(1);
     }
-    // ÆÄÀÏ ÀÔ·Â
+    // íŒŒì¼ ìž…ë ¥
     fwrite(img_sav, sizeof(unsigned char), IMAGE_SIZE, outFilePtr);
     fclose(outFilePtr);
 
-    //µ¿Àû ÇÒ´ç ÇØÁ¦
+    //ë™ì  í• ë‹¹ í•´ì œ
     free(img_org);
     free(img_sav);
 }
 
-//À¯Àú ÀÔ·Â
+//ìœ ì € ìž…ë ¥
 void processUserInput() {
-    int choice = 0; // »ç¿ëÀÚ ÀÔ·ÂÀ» ÀúÀåÇÒ º¯¼ö
+    int choice = 0; // ì‚¬ìš©ìž ìž…ë ¥ì„ ì €ìž¥í•  ë³€ìˆ˜
 
-    printf("´ÙÀ½ Áß ¿øÇÏ´Â ÀÛ¾÷À» ¼±ÅÃÇÏ¼¼¿ä.\n");
-    printf("1: ¿À¸¥ÂÊÀ¸·Î 90µµ È¸Àü\n");
-    printf("2: ¿À¸¥ÂÊÀ¸·Î 180µµ È¸Àü\n");
-    printf("3: ¿ÞÂÊÀ¸·Î 90µµ È¸Àü\n");
-    printf("4: ÁÂ¿ì ´ëÄª\n");
-    printf("5: »óÇÏ ´ëÄª\n");
+    printf("ë‹¤ìŒ ì¤‘ ì›í•˜ëŠ” ìž‘ì—…ì„ ì„ íƒí•˜ì„¸ìš”.\n");
+    printf("1: ì˜¤ë¥¸ìª½ìœ¼ë¡œ 90ë„ íšŒì „\n");
+    printf("2: ì˜¤ë¥¸ìª½ìœ¼ë¡œ 180ë„ íšŒì „\n");
+    printf("3: ì™¼ìª½ìœ¼ë¡œ 90ë„ íšŒì „\n");
+    printf("4: ì¢Œìš° ëŒ€ì¹­\n");
+    printf("5: ìƒí•˜ ëŒ€ì¹­\n");
 
     scanf("%d", &choice);
     while (0 >= choice || 5 < choice) {
-        printf("´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä\n");
+        printf("ë‹¤ì‹œ ìž…ë ¥í•´ì£¼ì„¸ìš”\n");
         scanf("%d", &choice);
     }
     startChange(choice);
 }
 
-//ÀÔ·Â ¹ÞÀº ´ë·Î ½ÇÇà
+//ìž…ë ¥ ë°›ì€ ëŒ€ë¡œ ì‹¤í–‰
 void startChange(int choice) {
     switch (choice) {
     case 1:
@@ -109,11 +109,11 @@ void startChange(int choice) {
         flip();
         break;
     default:
-        printf("1¿¡¼­ 5 »çÀÌÀÇ °ªÀ» ÀÔ·ÂÇØÁÖ¼¼¿ä.\n");
+        printf("1ì—ì„œ 5 ì‚¬ì´ì˜ ê°’ì„ ìž…ë ¥í•´ì£¼ì„¸ìš”.\n");
     }
 }
 
-//¿À¸¥ÂÊÀ¸·Î 90µµ È¸Àü
+//ì˜¤ë¥¸ìª½ìœ¼ë¡œ 90ë„ íšŒì „
 void rotate_90(void) {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
@@ -122,7 +122,7 @@ void rotate_90(void) {
     }
 }
 
-//¿À¸¥ÂÊÀ¸·Î 180µµ È¸Àü
+//ì˜¤ë¥¸ìª½ìœ¼ë¡œ 180ë„ íšŒì „
 void rotate_180(void) {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
@@ -132,7 +132,7 @@ void rotate_180(void) {
 
 }
 
-//¿ÞÂÊÀ¸·Î 90µµ È¸Àü
+//ì™¼ìª½ìœ¼ë¡œ 90ë„ íšŒì „
 void rotate_270(void) {
     for (int i = 0; i < WIDTH; i++) {
         for (int j = 0; j < HEIGHT; j++) {
@@ -141,7 +141,7 @@ void rotate_270(void) {
     }
 }
 
-//ÁÂ¿ì ¹ÝÀü
+//ì¢Œìš° ë°˜ì „
 void mirror(void) {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
@@ -150,7 +150,7 @@ void mirror(void) {
     }
 }
 
-//»óÇÏ ¹ÝÀü
+//ìƒí•˜ ë°˜ì „
 void flip(void) {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
