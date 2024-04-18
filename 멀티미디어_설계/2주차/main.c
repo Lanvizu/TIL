@@ -1,160 +1,559 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define HEIGHT 512
-#define WIDTH 512
-#define IMAGE_SIZE WIDTH * HEIGHT
+
+#define INPUT_NODES 784 // ÀÔ·Â °èÃş
+#define OUTPUT_NODES 10 // Ãâ·Â °èÃş
+#define HIDDEN_LAYERS 1 // È÷µç ·¹ÀÌ¾î ¼ö 1,2,3
+#define BATCH_SIZE 32 // ¹èÄ¡ Å©±â
+#define LEARNING_RATE 0.05 // ÇĞ½À·ü
+#define EPOCH 10 // ÇĞ½À ¹İº¹ ¼ö
+#define IMG_SIZE 784 // 28*28 ÀÌ¹ÌÁö Å©±â
+#define SIGMOID(x) 1.0 / (1.0 + exp(-x)) // ½Ã±×¸ğÀÌµå ÇÔ¼ö
+
+#define IMAGES_0 5923 //0 ÀÌ¹ÌÁö
+#define IMAGES_1 6742 //1 ÀÌ¹ÌÁö
+#define IMAGES_2 5958 //2 ÀÌ¹ÌÁö
+#define IMAGES_3 6131 //3 ÀÌ¹ÌÁö
+#define IMAGES_4 5842 //4 ÀÌ¹ÌÁö
+#define IMAGES_5 5421 //5 ÀÌ¹ÌÁö
+#define IMAGES_6 5918 //6 ÀÌ¹ÌÁö
+#define IMAGES_7 6265 //7 ÀÌ¹ÌÁö
+#define IMAGES_8 5851 //8 ÀÌ¹ÌÁö
+#define IMAGES_9 5949 //9 ÀÌ¹ÌÁö
+
+#define TEST_IMAGES_0 980 //0 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_1 1135 //1 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_2 1032 //2 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_3 1010 //3 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_4 982 //4 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_5 892 //5 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_6 958 //6 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_7 1028 //7 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_8 974 //8 Å×½ºÆ® ÀÌ¹ÌÁö
+#define TEST_IMAGES_9 1009 //9 Å×½ºÆ® ÀÌ¹ÌÁö
+
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
+#include <time.h>
 
-const char* filePath = "../Raw_Image/lena.img"; // ì›ë³¸ íŒŒì¼ ìœ„ì¹˜
-const char* outputFilePath = "../Raw_Image/lenaOutput.img"; // ì¶œë ¥ íŒŒì¼ ìœ„ì¹˜
+const char* basePath = "../mnist_raw/training/";// »ó´ë °æ·Î ¼³Á¤
 
-unsigned char* img_org = NULL; //ì›ë³¸ ì´ë¯¸ì§€
-unsigned char* img_sav = NULL; //ì¶œë ¥ ì´ë¯¸ì§€
+int totalImages = IMAGES_0 + IMAGES_1 + IMAGES_2 + IMAGES_3 + IMAGES_4
++ IMAGES_5 + IMAGES_6 + IMAGES_7 + IMAGES_8 + IMAGES_9; // ÀüÃ¼ ÀÌ¹ÌÁö ¼ö
 
-//ì›ë³¸,ì¶œë ¥ íŒŒì¼
-FILE* inFilePtr;
-FILE* outFilePtr;
+int imageCounts[] = {
+    IMAGES_0, IMAGES_1, IMAGES_2, IMAGES_3, IMAGES_4,
+    IMAGES_5, IMAGES_6, IMAGES_7, IMAGES_8, IMAGES_9
+}; // ÀÌ¹ÌÁö¸¶´Ù °³¼ö ¹è¿­
 
-void rotate_90(void);
-void rotate_180(void);
-void rotate_270(void);
-void mirror(void);
-void flip(void);
+const char* baseTestPath = "../mnist_raw/testing/";
 
+int totalTestImages = TEST_IMAGES_0 + TEST_IMAGES_1 + TEST_IMAGES_2 + TEST_IMAGES_3 + TEST_IMAGES_4
++ TEST_IMAGES_5 + TEST_IMAGES_6 + TEST_IMAGES_7 + TEST_IMAGES_8 + TEST_IMAGES_9; // ÀüÃ¼ Å×½ºÆ® ÀÌ¹ÌÁö ¼ö
+
+int testImageCounts[] = {
+    TEST_IMAGES_0, TEST_IMAGES_1, TEST_IMAGES_2, TEST_IMAGES_3, TEST_IMAGES_4,
+    TEST_IMAGES_5, TEST_IMAGES_6, TEST_IMAGES_7, TEST_IMAGES_8, TEST_IMAGES_9
+}; // Å×½ºÆ® ÀÌ¹ÌÁö¸¶´Ù °³¼ö ¹è¿­
+
+double** imageBuffer = NULL; //ÀÌ¹ÌÁö ÇÈ¼¿ ÀúÀå
+int** targets = NULL; // ¸ñÇ¥°ª ÀúÀå
+char* filePath;
+const int FILE_PATH_SIZE = 256;
+int* layers; //·¹ÀÌ¾î¸¶´Ù ³ëµå ¼ö ÀúÀå
+double*** weights; //°¡ÁßÄ¡
+double** biases; // ÆíÇâ
+double** predictions; // ¿¹Ãø°ª
+double*** saveWeights; //°¡ÁßÄ¡ ´©Àû
+double** saveBiases; //ÆíÇâ ´©Àû
+double** gradients; // ¾÷µ¥ÀÌÆ® ±â¿ï±â ÀúÀå
+double avgLoss; // Æò±Õ ¼Õ½Ç
+
+void inputNodes(void);
+void weightsBiasesMalloc(void);
 void loadFile(void);
-void saveFile(void);
-void startChange(int);
-void processUserInput(void);
+double sigmoid_derivative(double x);
+void freeWeightsBiases(void);
+void forwardPass(double* inputs);
+void printLayers(void);
+void printPredictions(void);
+void shuffle(int n);
+void saveWeightsBiasesToZero(void);
+void saveWeightsBiases(int count, double* inputs);
+void updateWeights(void);
+void train(void);
+void printAvgLoss(int count);
+void freeImageBufferAndTargets(int imagesCount);
+bool isCorrect(int i);
+void predictTestImages(void);
+void loadTestFile(void);
+void trainEpoch(void);
+int getTrueLabel(int i);
 
 int main(void) {
+
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock(); // ÇÔ¼ö ½ÇÇà Àü ½Ã°£ ÃøÁ¤ ½ÃÀÛ
+
+    inputNodes();
+    weightsBiasesMalloc();
     loadFile();
-    processUserInput();
-    saveFile();
-    return 0;
+    trainEpoch();
+    freeImageBufferAndTargets(totalImages);
+
+    //accuracy ÃøÁ¤
+    loadTestFile();
+    predictTestImages();
+    freeImageBufferAndTargets(totalTestImages);
+
+    freeWeightsBiases();
+
+    end = clock(); // ÇÔ¼ö ½ÇÇà ÈÄ ½Ã°£ ÃøÁ¤ Á¾·á
+
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC; // ÃøÁ¤µÈ ½Ã°£À» ÃÊ ´ÜÀ§·Î º¯È¯
+
+    printLayers();
+
+    printf("°É¸° ½Ã°£ = %f \n", cpu_time_used);
 }
 
-//ì›ë³¸ íŒŒì¼ ë¡œë“œ
+void trainEpoch() {
+    for (int i = 0; i < EPOCH; i++) {
+        printf("\n");
+        printf("EPOCH %d", i + 1);
+        printf("\n");
+        train();
+    }
+}
+
+// ÀÌ¹ÌÁö ¼ø¼­ ¼¯´Â ÇÔ¼ö
+void shuffle(int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int j = i + rand() % (n - i);
+        double* t = *(imageBuffer + j);
+        *(imageBuffer + j) = *(imageBuffer + i);
+        *(imageBuffer + i) = t;
+
+        int* s = *(targets + j);
+        *(targets + j) = *(targets + i);
+        *(targets + i) = s;
+    }
+}
+
+// ÀÌ¹ÌÁö ÆÄÀÏ ºÒ·¯¿À´Â ÇÔ¼ö
 void loadFile() {
-    // ë™ì  í• ë‹¹
-    img_org = (unsigned char*)malloc(sizeof(unsigned char) * IMAGE_SIZE);
-    img_sav = (unsigned char*)malloc(sizeof(unsigned char) * IMAGE_SIZE);
-    if (img_sav == NULL || img_org == NULL) {
-        printf("ë©”ëª¨ë¦¬ í• ë‹¹ ì‹¤íŒ¨\n");
+    imageBuffer = (double**)malloc(totalImages * sizeof(double*));
+    filePath = (char*)malloc(FILE_PATH_SIZE * sizeof(char));
+    targets = (int**)malloc(totalImages * sizeof(int*));
+    unsigned char* tempBuffer = (unsigned char*)malloc(IMG_SIZE * sizeof(unsigned char));
+    if (filePath == NULL || imageBuffer == NULL || targets == NULL || tempBuffer == NULL) {
+        printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
         exit(1);
     }
-    // íŒŒì¼ ì—´ê¸°
-    inFilePtr = fopen(filePath, "rb");
-    if (inFilePtr == NULL) {
-        perror("íŒŒì¼ ì—´ê¸° ì‹¤íŒ¨");
+    int totalCount = 0;
+    for (int i = 0; i < 10; i++) {
+        int count = imageCounts[i];
+        for (int j = 0; j < count; j++) {
+            snprintf(filePath, FILE_PATH_SIZE, "%s%d/%d-%d.raw", basePath, i, i, j);
+            FILE* inFilePtr = fopen(filePath, "rb");
+            if (inFilePtr == NULL) {
+                fprintf(stderr, "ÆÄÀÏ '%s' ¿­±â ½ÇÆĞ\n", filePath);
+                continue;
+            }
+            *(imageBuffer + totalCount + j) = (double*)malloc(IMG_SIZE * sizeof(double));
+            *(targets + totalCount + j) = (int*)malloc(OUTPUT_NODES * sizeof(int));
+            if (*(imageBuffer + totalCount + j) == NULL || *(targets + totalCount + j) == NULL) {
+                printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
+                exit(1);
+            }
+            size_t bytesRead = fread(tempBuffer, sizeof(unsigned char), IMG_SIZE, inFilePtr);
+            if (bytesRead != IMG_SIZE) {
+                fprintf(stderr, "ÆÄÀÏ '%s' ¿­±â ½ÇÆĞ\n", filePath);
+            }
+            else {
+                for (int k = 0; k < IMG_SIZE; k++) {
+                    *(*(imageBuffer + totalCount + j) + k) = *(tempBuffer + k) / 255.0f;
+                }
+            }
+            for (int k = 0; k < OUTPUT_NODES; k++) {
+                if (k == i) {
+                    *(*(targets + totalCount + j) + k) = 1;
+                }
+                else {
+                    *(*(targets + totalCount + j) + k) = 0;
+                }
+            }
+            fclose(inFilePtr);
+        }
+        totalCount += count;
+    }
+    free(filePath);
+    free(tempBuffer);
+    //ºÎÁ·ÇÒ °æ¿ì ¹İº¹ ¼ÅÇÃ
+    shuffle(totalCount);
+}
+
+// Å×½ºÆ® ÀÌ¹ÌÁö ÆÄÀÏ ºÒ·¯¿À´Â ÇÔ¼ö
+void loadTestFile() {
+    imageBuffer = (double**)malloc(totalTestImages * sizeof(double*));
+    filePath = (char*)malloc(FILE_PATH_SIZE * sizeof(char));
+    targets = (int**)malloc(totalTestImages * sizeof(int*));
+    unsigned char* tempBuffer = (unsigned char*)malloc(IMG_SIZE * sizeof(unsigned char));
+    if (filePath == NULL || imageBuffer == NULL || targets == NULL || tempBuffer == NULL) {
+        printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
         exit(1);
     }
+    int totalCount = 0;
+    for (int i = 0; i < 10; i++) {
+        int count = testImageCounts[i];
+        for (int j = 0; j < count; j++) {
+            snprintf(filePath, FILE_PATH_SIZE, "%s%d/%d-%d.raw", baseTestPath, i, i, j);
+            FILE* inFilePtr = fopen(filePath, "rb");
+            if (inFilePtr == NULL) {
+                fprintf(stderr, "ÆÄÀÏ '%s' ¿­±â ½ÇÆĞ\n", filePath);
+                continue;
+            }
+            *(imageBuffer + totalCount + j) = (double*)malloc(IMG_SIZE * sizeof(double));
+            *(targets + totalCount + j) = (int*)malloc(OUTPUT_NODES * sizeof(int));
+            if (*(imageBuffer + totalCount + j) == NULL || *(targets + totalCount + j) == NULL) {
+                printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
+                exit(1);
+            }
+            size_t bytesRead = fread(tempBuffer, sizeof(unsigned char), IMG_SIZE, inFilePtr);
+            if (bytesRead != IMG_SIZE) {
+                fprintf(stderr, "ÆÄÀÏ '%s' ¿­±â ½ÇÆĞ\n", filePath);
+            }
+            else {
+                for (int k = 0; k < IMG_SIZE; k++) {
+                    *(*(imageBuffer + totalCount + j) + k) = *(tempBuffer + k) / 255.0f;
+                }
+            }
+            for (int k = 0; k < OUTPUT_NODES; k++) {
+                if (k == i) {
+                    *(*(targets + totalCount + j) + k) = 1;
+                }
+                else {
+                    *(*(targets + totalCount + j) + k) = 0;
+                }
+            }
 
-    //ì½ì–´ì˜¨ íŒŒì¼ ì›ë³¸(img_org)ì— ì €ì¥
-    fread(img_org, sizeof(unsigned char), IMAGE_SIZE, inFilePtr);
-    
-    fclose(inFilePtr);
+            fclose(inFilePtr);
+        }
+        totalCount += count;
+    }
+    free(filePath);
+    shuffle(totalCount);
 }
-// íŒŒì¼ ì €ì¥
-void saveFile() {
-    outFilePtr = fopen(outputFilePath, "wb");
-    if (outFilePtr == NULL) {
-        perror("íŒŒì¼ ì—´ê¸° ì‹¤íŒ¨");
+
+void train() {
+    int count = 0;
+    for (int i = 0; i < totalImages / BATCH_SIZE; i++) {
+        saveWeightsBiasesToZero();
+        for (int j = 0; j < BATCH_SIZE; j++) {
+            forwardPass(*(imageBuffer + count));
+            //printPredictions();
+            saveWeightsBiases(count, *(imageBuffer + count));
+            count++;
+        }
+        updateWeights();
+    }
+    printAvgLoss(count);
+}
+
+// Æò±Õ ¼Õ½Ç Ãâ·Â
+void printAvgLoss(int count) {
+    printf("%f\n", avgLoss / (count * 10));
+    avgLoss = 0.0;
+}
+
+//¿¹Ãø°ª Ãâ·Â
+void printPredictions() {
+    for (int j = 0; j < *(layers + (HIDDEN_LAYERS + 1)); j++) {
+        printf("%f ", *(*(predictions + HIDDEN_LAYERS) + j));
+    }
+    printf("\n");
+}
+
+// ³ëµå °³¼ö ÀÔ·Â
+void inputNodes() {
+    layers = (int*)malloc(sizeof(int) * (HIDDEN_LAYERS + 2));
+    if (layers == NULL) {
+        printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
         exit(1);
     }
-    // íŒŒì¼ ì…ë ¥
-    fwrite(img_sav, sizeof(unsigned char), IMAGE_SIZE, outFilePtr);
-    fclose(outFilePtr);
-
-    //ë™ì  í• ë‹¹ í•´ì œ
-    free(img_org);
-    free(img_sav);
-}
-
-//ìœ ì € ì…ë ¥
-void processUserInput() {
-    int choice = 0; // ì‚¬ìš©ì ì…ë ¥ì„ ì €ì¥í•  ë³€ìˆ˜
-
-    printf("ë‹¤ìŒ ì¤‘ ì›í•˜ëŠ” ì‘ì—…ì„ ì„ íƒí•˜ì„¸ìš”.\n");
-    printf("1: ì˜¤ë¥¸ìª½ìœ¼ë¡œ 90ë„ íšŒì „\n");
-    printf("2: ì˜¤ë¥¸ìª½ìœ¼ë¡œ 180ë„ íšŒì „\n");
-    printf("3: ì™¼ìª½ìœ¼ë¡œ 90ë„ íšŒì „\n");
-    printf("4: ì¢Œìš° ëŒ€ì¹­\n");
-    printf("5: ìƒí•˜ ëŒ€ì¹­\n");
-
-    scanf("%d", &choice);
-    while (0 >= choice || 5 < choice) {
-        printf("ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”\n");
-        scanf("%d", &choice);
-    }
-    startChange(choice);
-}
-
-//ì…ë ¥ ë°›ì€ ëŒ€ë¡œ ì‹¤í–‰
-void startChange(int choice) {
-    switch (choice) {
-    case 1:
-        rotate_90();
-        break;
-    case 2:
-        rotate_180();
-        break;
-    case 3:
-        rotate_270();
-        break;
-    case 4:
-        mirror();
-        break;
-    case 5:
-        flip();
-        break;
-    default:
-        printf("1ì—ì„œ 5 ì‚¬ì´ì˜ ê°’ì„ ì…ë ¥í•´ì£¼ì„¸ìš”.\n");
-    }
-}
-
-//ì˜¤ë¥¸ìª½ìœ¼ë¡œ 90ë„ íšŒì „
-void rotate_90(void) {
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            *(img_sav + j * HEIGHT + (HEIGHT - 1 - i)) = *(img_org + i * WIDTH + j);
+    *(layers + 0) = INPUT_NODES;
+    *(layers + HIDDEN_LAYERS + 1) = OUTPUT_NODES;
+    for (int i = 1; i < HIDDEN_LAYERS + 1; i++) {
+        printf("È÷µç ·¹ÀÌ¾î %dÀÇ ³ëµå ¼ö¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ", i);
+        if (scanf("%d", layers + i) != 1) {
+            printf("Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. Á¤¼ö¸¦ ÀÔ·ÂÇØ¾ß ÇÕ´Ï´Ù.\n");
+            exit(1);
         }
     }
 }
 
-//ì˜¤ë¥¸ìª½ìœ¼ë¡œ 180ë„ íšŒì „
-void rotate_180(void) {
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            *(img_sav + i * WIDTH + j) = *(img_org + (HEIGHT - 1 - i) * WIDTH + (WIDTH - 1 - j));
-        }
+// ·¹ÀÌ¾î ±¸¼º Ãâ·Â
+void printLayers() {
+    printf("·¹ÀÌ¾î ±¸¼º \n");
+    printf("¹èÄ¡ »çÀÌÁî: %d \n", BATCH_SIZE);
+    printf("ÀÔ·Â ·¹ÀÌ¾î: %d ³ëµå\n", *(layers + 0));
+    for (int i = 1; i <= HIDDEN_LAYERS; i++) {
+        printf("È÷µç ·¹ÀÌ¾î %d: %d ³ëµå\n", i, *(layers + i));
     }
-
+    printf("Ãâ·Â ·¹ÀÌ¾î: %d ³ëµå\n", *(layers + HIDDEN_LAYERS + 1));
+    printf("ÇĞ½À·ü: %f \n", LEARNING_RATE);
+    printf("ÇĞ½À ¹İº¹ È½¼ö: %d \n", EPOCH);
 }
 
-//ì™¼ìª½ìœ¼ë¡œ 90ë„ íšŒì „
-void rotate_270(void) {
-    for (int i = 0; i < WIDTH; i++) {
-        for (int j = 0; j < HEIGHT; j++) {
-            *(img_sav + i * HEIGHT + j) = *(img_org + j * WIDTH + (WIDTH - 1 - i));
+//¸Ş¸ğ¸® ÇÒ´ç ¹× ÃÊ±âÈ­
+void weightsBiasesMalloc() {
+    weights = (double***)malloc((HIDDEN_LAYERS + 1) * sizeof(double**));
+    biases = (double**)malloc((HIDDEN_LAYERS + 1) * sizeof(double*));
+    saveWeights = (double***)malloc((HIDDEN_LAYERS + 1) * sizeof(double**));
+    saveBiases = (double**)malloc((HIDDEN_LAYERS + 1) * sizeof(double*));
+    gradients = (double**)malloc((HIDDEN_LAYERS + 1) * sizeof(double*));
+    predictions = (double**)malloc((HIDDEN_LAYERS + 1) * sizeof(double*));
+
+    if (weights == NULL || biases == NULL || saveWeights == NULL
+        || saveBiases == NULL || gradients == NULL || predictions == NULL) {
+        printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
+        exit(1);
+    }
+    for (int i = 0; i < HIDDEN_LAYERS + 1; i++) {
+        int inputLayerNode = *(layers + i);
+        int outputLayerNode = *(layers + (i + 1));
+
+        *(weights + i) = (double**)malloc(inputLayerNode * sizeof(double*));
+        *(saveWeights + i) = (double**)malloc(inputLayerNode * sizeof(double*));
+        *(biases + i) = (double*)malloc(outputLayerNode * sizeof(double));
+        *(saveBiases + i) = (double*)malloc(outputLayerNode * sizeof(double));
+        *(gradients + i) = (double*)malloc(*(layers + i + 1) * sizeof(double));
+        *(predictions + i) = (double*)malloc(outputLayerNode * sizeof(double));
+
+        if (*(weights + i) == NULL || *(biases + i) == NULL || *(predictions + i) == NULL
+            || *(saveWeights + i) == NULL || *(saveBiases + i) == NULL || *(gradients + i) == NULL) {
+            printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
+            exit(1);
+        }
+        for (int j = 0; j < inputLayerNode; j++) {
+            *(*(weights + i) + j) = (double*)malloc(outputLayerNode * sizeof(double));
+            *(*(saveWeights + i) + j) = (double*)malloc(outputLayerNode * sizeof(double));
+            if (*(*(weights + i) + j) == NULL || *(*(saveWeights + i) + j) == NULL) {
+                printf("¸Ş¸ğ¸® ÇÒ´ç ½ÇÆĞ\n");
+                exit(1);
+            }
+            for (int k = 0; k < outputLayerNode; k++) {
+                // -1.0°ú 1.0 »çÀÌÀÇ ¹«ÀÛÀ§ °ªÀ» »ı¼ºÇÏ¿© °¡ÁßÄ¡ ÃÊ±âÈ­
+                *(*(*(weights + i) + j) + k) = (double)rand() / RAND_MAX * 2.0 - 1.0;
+            }
+        }
+        for (int j = 0; j < outputLayerNode; j++) {
+            *(*(biases + i) + j) = (double)rand() / RAND_MAX * 2.0 - 1.0;
         }
     }
 }
 
-//ì¢Œìš° ë°˜ì „
-void mirror(void) {
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            *(img_sav + i * WIDTH + j) = *(img_org + i * WIDTH + (WIDTH - 1 - j));
+//°¡ÁßÄ¡¿Í ÆíÇâ ´©Àû°ª ÃÊ±âÈ­
+void saveWeightsBiasesToZero() {
+    for (int i = 0; i < HIDDEN_LAYERS + 1; i++) {
+        int inputLayerNode = *(layers + i);
+        int outputLayerNode = *(layers + (i + 1));
+
+        for (int j = 0; j < inputLayerNode; j++) {
+            for (int k = 0; k < outputLayerNode; k++) {
+                *(*(*(saveWeights + i) + j) + k) = 0.0;
+            }
+        }
+
+        for (int j = 0; j < outputLayerNode; j++) {
+            *(*(saveBiases + i) + j) = 0.0;
         }
     }
 }
 
-//ìƒí•˜ ë°˜ì „
-void flip(void) {
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            *(img_sav + i * WIDTH + j) = *(img_org + (HEIGHT - 1 - i) * WIDTH + j);
+// °¡ÁßÄ¡ ¸Ş¸ğ¸® ÇØÁ¦
+void freeWeightsBiases() {
+    for (int i = 0; i < HIDDEN_LAYERS + 1; i++) {
+        for (int j = 0; j < *(layers + i); j++) {
+            free(*(*(weights + i) + j));
+            free(*(*(saveWeights + i) + j));
+        }
+        free(*(weights + i));
+        free(*(saveWeights + i));
+        free(*(biases + i));
+        free(*(saveBiases + i));
+        free(*(predictions + i));
+    }
+    free(weights);
+    free(saveWeights);
+    free(biases);
+    free(saveBiases);
+    free(predictions);
+}
+
+void freeImageBufferAndTargets(int imagesCount) {
+    for (int i = 0; i < imagesCount; i++) {
+        free(*(imageBuffer + i));
+        free(*(targets + i));
+    }
+    free(imageBuffer);
+    free(targets);
+}
+
+// ½Ã±×¸ğÀÌµå ¹ÌºĞ
+double sigmoid_derivative(double x) {
+    return x * (1.0 - x);
+}
+
+// ¼øÀüÆÄ ÇĞ½À
+void forwardPass(double* inputs) {
+    for (int i = 0; i < HIDDEN_LAYERS + 1; i++) {
+        int inputNodesCount = *(layers + i);
+        int outputNodesCount = *(layers + i + 1);
+
+        for (int j = 0; j < outputNodesCount; j++) {
+            *(*(predictions + i) + j) = *(*(biases + i) + j);
+            for (int k = 0; k < inputNodesCount; k++) {
+                if (i == 0) {
+                    *(*(predictions + i) + j) += *(inputs + k) * *(*(*(weights + i) + k) + j);
+                }
+                else {
+                    *(*(predictions + i) + j) += *(*(predictions + i - 1) + k) * *(*(*(weights + i) + k) + j);
+                }
+            }
+            *(*(predictions + i) + j) = SIGMOID(*(*(predictions + i) + j));
         }
     }
+}
+
+// °¡ÁßÄ¡ ¾÷µ¥ÀÌÆ® ´©Àû ÀúÀå
+void saveWeightsBiases(int count, double* inputs) {
+    double error;
+    double gradientUpdate;
+    for (int i = HIDDEN_LAYERS; i >= 0; i--) {
+        for (int j = 0; j < *(layers + i + 1); j++) {
+            if (i == HIDDEN_LAYERS) {
+                error = *(*(targets + count) + j) - *(*(predictions + i) + j);
+
+                avgLoss += error * error;
+
+                *(*(gradients + i) + j) = error * sigmoid_derivative(*(*(predictions + i) + j));
+
+                gradientUpdate = LEARNING_RATE * *(*(gradients + i) + j);
+
+                for (int k = 0; k < *(layers + i); k++) {
+                    *(*(*(saveWeights + i) + k) + j) += gradientUpdate * *(*(predictions + (i - 1)) + k);
+                }
+                *(*(saveBiases + i) + j) += gradientUpdate;
+            }
+            else {
+                error = 0.0;
+                for (int k = 0; k < *(layers + i + 2); k++) {
+                    error += *(*(gradients + i + 1) + k) * *(*(*(weights + i + 1) + j) + k);
+                }
+
+                *(*(gradients + i) + j) = error * sigmoid_derivative(*(*(predictions + i) + j));
+                gradientUpdate = LEARNING_RATE * *(*(gradients + i) + j);
+
+                for (int k = 0; k < *(layers + i); k++) {
+                    if (i == 0) { // ÀÔ·ÂÃş¿¡ ´ëÇÑ Ã³¸®
+                        *(*(*(saveWeights + i) + k) + j) += gradientUpdate * *(inputs + k);
+                    }
+                    else { // ÀÌÀü Àº´ĞÃş¿¡ ´ëÇÑ Ã³¸®
+                        *(*(*(saveWeights + i) + k) + j) += gradientUpdate * *(*(predictions + (i - 1)) + k);
+                    }
+                }
+                *(*(saveBiases + i) + j) += gradientUpdate;
+            }
+        }
+    }
+}
+
+// °¡ÁßÄ¡ ¾÷µ¥ÀÌÆ®
+void updateWeights() {
+    for (int i = 0; i < HIDDEN_LAYERS + 1; i++) {
+        for (int j = 0; j < *(layers + i + 1); j++) {
+            for (int k = 0; k < *(layers + i); k++) {
+                *(*(*(weights + i) + k) + j) += *(*(*(saveWeights + i) + k) + j) / BATCH_SIZE;
+                //printf("%d ^^^ %d ^^^ %d ^^^ %f \n", i, k, j, *(*(*(weights + i) + k) + j));
+            }
+            *(*(biases + i) + j) += *(*(saveBiases + i) + j) / BATCH_SIZE;
+        }
+    }
+}
+
+// accuracy ÃøÁ¤
+void predictTestImages() {
+    int totalCorrectPredictions = 0;
+    int corretPredictions[10] = { 0 };
+    for (int i = 0; i < totalTestImages; i++) {
+        forwardPass(*(imageBuffer + i));
+        if (isCorrect(i)) {
+            int trueLabel = getTrueLabel(i);
+            //printf("%d\n", trueLabel);
+            totalCorrectPredictions++;
+            corretPredictions[trueLabel]++;
+        }
+    }
+    double totalAccuracy = (double)totalCorrectPredictions / totalTestImages;
+    printf("accuracy = %f\n", totalAccuracy);
+    for (int i = 0; i < 10; i++) {
+        double accuracy = (double)corretPredictions[i] / testImageCounts[i];
+        //printf("%d\n", corretPredictions[i]);
+        //printf("%d\n", testImageCounts[i]);
+        printf("%d ÀÇ accuracy = %f\n", i, accuracy);
+    }
+}
+
+// Å×½ºÆ® ¸ğµ¨ÀÇ ¿¹Ãø°ª°ú Á¤´äÀ» bool Ãâ·Â
+bool isCorrect(int i) {
+    int predictedLabel = 0;
+    double maxPrediction = *(*(predictions + HIDDEN_LAYERS) + 0);
+    for (int j = 1; j < 10; j++) {
+        if (*(*(predictions + HIDDEN_LAYERS) + j) > maxPrediction) {
+            maxPrediction = *(*(predictions + HIDDEN_LAYERS) + j);
+            predictedLabel = j;
+        }
+    }
+    if (*(*(targets + i) + predictedLabel) == 1) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+// ¸ñÇ¥°ª °¡Á®¿À±â
+int getTrueLabel(int i) {
+    for (int j = 0; j < 10; j++) {
+        if (*(*(targets + i) + j) == 1) {
+            return j;
+        }
+    }
+    return -1;
+}
+
+void saveNNMeta(const char* filename, const NeuralNetwork* nn) {
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        fprintf(stderr, "ÆÄÀÏ ¿­±â ½ÇÆĞ: %s\n", filename);
+        return;
+    }
+
+    fprintf(file, "InputNodes: %d\n", nn->inputNodes);
+    fprintf(file, "HiddenLayers: %d\n", nn->hiddenLayers);
+    for (int i = 0; i < nn->hiddenLayers; i++) {
+        fprintf(file, "HiddenLayer%d: %d\n", i + 1, nn->hiddenNodes[i]);
+    }
+    fprintf(file, "OutputNodes: %d\n", nn->outputNodes);
+    fprintf(file, "LearningRate: %f\n", nn->learningRate);
+    fprintf(file, "BatchSize: %d\n", nn->batchSize);
+
+    // ¿¹½Ã: °¢ ·¹ÀÌ¾îÀÇ °¡ÁßÄ¡ ÀúÀå (½ÇÁ¦ ±¸Çö¿¡¼­´Â ½ÇÁ¦ °¡ÁßÄ¡ µ¥ÀÌÅÍ¸¦ Ã³¸®ÇØ¾ß ÇÔ)
+    // ÀÌ ºÎºĞÀº ½ÇÁ¦ °¡ÁßÄ¡ µ¥ÀÌÅÍ¿¡ µû¶ó ¸Å¿ì ´Ù¸¦ ¼ö ÀÖÀ¸¸ç, ¿©±â¼­´Â ´Ü¼øÈ­µÈ ¿¹½Ã¸¦ Á¦°øÇÕ´Ï´Ù.
+    // ¿¹: fprintf(file, "WeightsLayer1: %f, %f, ...\n", weights[0], weights[1]);
+
+    fclose(file);
 }
