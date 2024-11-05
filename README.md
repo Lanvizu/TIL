@@ -21,7 +21,7 @@
 
 - 2024.10.31 [데이터베이스](./spring_example/데이터베이스_정리.md)
 
-- 2024.10.31 [캐시(Cache)](./spring_example/캐시_정리.md)
+- 2024.11.05 [캐시(Cache)](./spring_example/캐시_정리.md)
   
 </details>
 
