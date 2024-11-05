@@ -18,6 +18,10 @@
   
 <summary> 정리 중 </summary>
 
+- 2024.10.22 [SRP](./spring_example/SRP_정리.md)
+  
+- 2024.10.23 [OOP](./spring_example/OOP_정리.md)
+
 - 2024.10.28 [RESTful API](./spring_example/RESTful_API_정리.md)
 
 - 2024.10.29 [데이터 구조](./spring_example/데이터_구조_정리.md)
