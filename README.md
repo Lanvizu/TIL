@@ -12,6 +12,20 @@
   
 </details>
 
+## 기초 지식 정리
+
+<details>
+  
+<summary> 정리 중 </summary>
+
+- 2024.10.28 [RESTful API](./spring_example/RESTful_API_정리.md)
+
+- 2024.10.29 [데이터 구조](./spring_example/데이터_구조_정리.md)
+
+- 2024.10.31 [데이터베이스](./spring_example/데이터베이스_정리.md)
+  
+</details>
+
 
 ## 회고록
 
