@@ -15,6 +15,8 @@
 
 - 2024.10.28 [RESTful API](./spring_example/RESTful_API_정리.md)
 
+- 2024.10.28 [API 명세서](./spring_example/API_명세서_정리.md)
+
 - 2024.10.29 [데이터 구조](./spring_example/데이터_구조_정리.md)
 
 - 2024.10.31 [데이터베이스](./spring_example/데이터베이스_정리.md)
