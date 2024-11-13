@@ -14,7 +14,7 @@
 
 - '음의 간선'이 없을 때 정상적으로 작동
 
-    - 응의 간선: 0보다 작은 값을 가지는 간선
+    - 음음의 간선: 0보다 작은 값을 가지는 간선
  
 > '가장 비용이 적은 노드'를 선택하는 임의의 과정 반복이므로 그리디 알고리즘으로 분류
 
@@ -64,3 +64,63 @@
 > PriorityQueue보다 통상적으로 heapq가 빠르다.
 
 - 이후 최단거리를 갱신하는 방법은 1번 방법과 동일하다.
+
+> 추가로 2차원 배열을 통해 간선과 시간을 계산하는 방법보다 인접 리스트를 통하면 더 빠르게 계산 가능
+
+-----
+
+### 다익스트라 예제
+
+[파티_1238](https://www.acmicpc.net/problem/1238)
+
+```Python
+import sys
+import heapq
+input = sys.stdin.readline
+
+N, M, X = map(int,input().split())
+
+graph = [[] for _ in range(N+1)]
+for _ in range(M):
+    a,b,c = map(int, input().split())
+    # 인접 리스트를 통해서 정보 처리
+    graph[a].append((b,c))
+
+def dijkstra(start, g):
+    # 시작점에서 모든 경로 초기화
+    dist = [float('inf')] * (N+1)
+    dist[start] = 0
+    q = [(0, start)]
+
+    while q:
+        now_t, now = heapq.heappop(q)
+        if now_t > dist[now]:
+            continue
+        for next, weight in g[now]:
+            total_t = now_t + weight
+            if total_t < dist[next]:
+                dist[next] = total_t
+                heapq.heappush(q, (total_t, next))
+
+    return dist
+
+# X에서 모든 정점으로의 최단 경로
+all_from_X = dijkstra(X, graph)
+
+# 모든 정점에서 X로의 최단 경로
+all_to_X = [0] * (N+1)
+for i in range(1, N+1):
+    if i != X:
+        all_to_X[i] = dijkstra(i, graph)[X]
+
+max_t = max(all_from_X[i] + all_to_X[i] for i in range(1, N+1) if i != X)
+print(max_t)
+```
+
+모든 노드에서 특정 노드 X로 향하는 최단시간과
+
+특정 노드 X에서 모든 노드로 향하는 최단시간 두 가지 경우를 계산해야한다.
+
+해당 문제에서 동일한 다익스트라 메서드 dijkstra(start, g) 을 사용해 두 가지 경우를 계산했다.
+
+> 2차원 배열 대신 인접 리스트를 통해서 처리하게되면 희소 그래프(간선의 값이 없는 경우가 많은 그래프)에 대해서 더 효율적으로 값을 처리 가능하다.
