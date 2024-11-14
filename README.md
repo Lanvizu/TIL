@@ -20,7 +20,7 @@
 
 - [Database](./spring_example/Database.md)
 
-- [캐시(Cache)](./spring_example/캐시_정리.md)
+- [Cache](./spring_example/Cache.md)
   
 - [Dijkstra](./Alogorithm/Dijkstra.md)
   
