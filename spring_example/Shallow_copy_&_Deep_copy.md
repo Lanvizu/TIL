@@ -85,7 +85,7 @@ print(b) #[5, 2, [4]]
 
 [감시_15683](https://www.acmicpc.net/workbook/view/8708)
 
-```
+```Python
 import sys
 input = sys.stdin.readline
 
