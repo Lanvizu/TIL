@@ -18,7 +18,7 @@
 
 - [데이터 구조](./spring_example/데이터_구조_정리.md)
 
-- [데이터베이스](./spring_example/데이터베이스_정리.md)
+- [Database](./spring_example/Database.md)
 
 - [캐시(Cache)](./spring_example/캐시_정리.md)
   
