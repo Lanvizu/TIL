@@ -8,11 +8,11 @@
   
 <summary> 정리 중 </summary>
 
-- [SRP](./spring_example/SRP_정리.md)
+- [SRP](./spring_example/SRP.md)
   
-- [OOP](./spring_example/OOP_정리.md)
+- [OOP](./spring_example/OOP.md)
 
-- [RESTful API](./spring_example/RESTful_API_정리.md)
+- [RESTful API](./spring_example/RESTful_API.md)
 
 - [API 명세서](./spring_example/API_명세서_정리.md)
 
