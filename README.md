@@ -16,7 +16,7 @@
 
 - [API 명세서](./spring_example/API_명세서_정리.md)
 
-- [데이터 구조](./spring_example/데이터_구조_정리.md)
+- [Data Structure](./spring_example/Data_Structure.md)
 
 - [Database](./spring_example/Database.md)
 
