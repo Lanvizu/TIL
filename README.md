@@ -54,5 +54,21 @@
   
 </details>
 
+## 스프링 MVC 1
+
+<details>
+  
+<summary>2024-11-19 ~ </summary>
+
+- [01 웹 애플리케이션 이해](./스프링_MVC_1/01_웹_애플리케이션_이해.md)
+
+- [02 서블릿](./스프링_MVC_1/02_서블릿.md)
+  
+- [03 서블릿, JSP, MVC 패턴](./스프링_MVC_1/03_서블릿_JSP_MVC_패턴.md)
+  
+</details>
+
+스프링_MVC_1/01_웹_애플리케이션_이해.md
+
 [네이버 블로그](https://blog.naver.com/ghzm888)
 
