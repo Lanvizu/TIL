@@ -831,7 +831,9 @@ public class FrontControllerServletV4 extends HttpServlet {
 
 - 현재까지 프론트 컨트롤러는 한가지의 컨트롤러 인터페이스만을 사용
 
-- 개발자에 따라 적용하고 싶은 컨트롤러가 다를 수 있다. -> 이런 경우를 해결하기위해 어댑터 패턴이 추가
+- 개발자에 따라 적용하고 싶은 컨트롤러가 다를 수 있다.
+
+- -> 이런 경우를 해결하기위해 어댑터 패턴이 추가
 
 ### 어댑터 패턴
 
@@ -877,3 +879,203 @@ public interface MyHandlerAdapter {
     - ModelView를 반환하지 못할 경우, 어댑터가 직접 생성해서라도 반환해야함 (v4는 viewName을 반환하므로 ModelView로 생성하여 반환)
  
     - 프론트 컨트롤러가 호출했던 실제 컨트롤러를 어댑터를 통해 호출
+
+### ControllerV3HandlerAdapter
+
+```JAVA
+package hello.servlet.web.frontcontroller.v5.adapter;
+import hello.servlet.web.frontcontroller.ModelView;
+import hello.servlet.web.frontcontroller.v3.ControllerV3;
+import hello.servlet.web.frontcontroller.v5.MyHandlerAdapter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
+public class ControllerV3HandlerAdapter implements MyHandlerAdapter {
+    @Override
+    public boolean supports(Object handler) {
+        return (handler instanceof ControllerV3);
+    }
+    @Override
+    public ModelView handle(HttpServletRequest request, HttpServletResponse
+            response, Object handler) {
+        ControllerV3 controller = (ControllerV3) handler;
+        Map<String, String> paramMap = createParamMap(request);
+        ModelView mv = controller.process(paramMap);
+        return mv;
+    }
+    private Map<String, String> createParamMap(HttpServletRequest request) {
+        Map<String, String> paramMap = new HashMap<>();
+        request.getParameterNames().asIterator()
+                .forEachRemaining(paramName -> paramMap.put(paramName,
+                        request.getParameter(paramName)));
+        return paramMap;
+    }
+}
+```
+
+### ControllerV4HandlerAdapter
+
+```JAVA
+package hello.servlet.web.frontcontroller.v5.adapter;
+
+import hello.servlet.web.frontcontroller.ModelView;
+import hello.servlet.web.frontcontroller.v4.ControllerV4;
+import hello.servlet.web.frontcontroller.v5.MyHandlerAdapter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
+
+public class ControllerV4HandlerAdapter implements MyHandlerAdapter {
+    @Override
+    public boolean supports(Object handler) {
+        return (handler instanceof ControllerV4);
+    }
+    @Override
+    public ModelView handle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        ControllerV4 controller = (ControllerV4) handler;
+        Map<String, String> paramMap = createParamMap(request);
+        Map<String, Object> model = new HashMap<>();
+        String viewName = controller.process(paramMap, model);
+
+        ModelView mv = new ModelView(viewName);
+        mv.setModel(model);
+
+        return mv;
+    }
+    private Map<String, String> createParamMap(HttpServletRequest request) {
+        Map<String, String> paramMap = new HashMap<>();
+        request.getParameterNames().asIterator()
+                .forEachRemaining(paramName -> paramMap.put(paramName,
+                        request.getParameter(paramName)));
+        return paramMap;
+    }
+}
+
+```
+
+- 기존 v4에서 viewName을 반환하는 것을 수정해 ModelView 객체로 만들어 반환한다.
+
+- 즉, 정해진 형식에 맞춰서 반환환
+
+### FrontControllerServletV5
+
+```
+package hello.servlet.web.frontcontroller.v5;
+
+import hello.servlet.web.frontcontroller.ModelView;
+import hello.servlet.web.frontcontroller.MyView;
+import hello.servlet.web.frontcontroller.v3.controller.MemberFormControllerV3;
+import hello.servlet.web.frontcontroller.v3.controller.MemberListControllerV3;
+import hello.servlet.web.frontcontroller.v3.controller.MemberSaveControllerV3;
+import hello.servlet.web.frontcontroller.v4.controller.MemberFormControllerV4;
+import hello.servlet.web.frontcontroller.v4.controller.MemberListControllerV4;
+import hello.servlet.web.frontcontroller.v4.controller.MemberSaveControllerV4;
+import hello.servlet.web.frontcontroller.v5.adapter.ControllerV3HandlerAdapter;
+import hello.servlet.web.frontcontroller.v5.adapter.ControllerV4HandlerAdapter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@WebServlet(name = "frontControllerServletV5", urlPatterns = "/front-controller/v5/*")
+public class FrontControllerServletV5 extends HttpServlet {
+    private final Map<String, Object> handlerMappingMap = new HashMap<>();
+    private final List<MyHandlerAdapter> handlerAdapters = new ArrayList<>();
+
+    public FrontControllerServletV5() {
+        initHandlerMappingMap();
+        initHandlerAdapters();
+    }
+
+    private void initHandlerMappingMap() {
+        handlerMappingMap.put("/front-controller/v5/v3/members/new-form", new MemberFormControllerV3());
+        handlerMappingMap.put("/front-controller/v5/v3/members/save", new MemberSaveControllerV3());
+        handlerMappingMap.put("/front-controller/v5/v3/members", new MemberListControllerV3());
+
+        //V4 추가
+        handlerMappingMap.put("/front-controller/v5/v4/members/new-form", new MemberFormControllerV4());
+        handlerMappingMap.put("/front-controller/v5/v4/members/save", new MemberSaveControllerV4());
+        handlerMappingMap.put("/front-controller/v5/v4/members", new MemberListControllerV4());
+    }
+
+    private void initHandlerAdapters() {
+        handlerAdapters.add(new ControllerV3HandlerAdapter());
+        handlerAdapters.add(new ControllerV4HandlerAdapter());
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        Object handler = getHandler(request);
+        if (handler == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        MyHandlerAdapter adapter = getHandlerAdapter(handler);
+        ModelView mv = adapter.handle(request, response, handler);
+        MyView view = viewResolver(mv.getViewName());
+        view.render(mv.getModel(), request, response);
+    }
+
+    private Object getHandler(HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        return handlerMappingMap.get(requestURI);
+    }
+
+    private MyHandlerAdapter getHandlerAdapter(Object handler) {
+        for (MyHandlerAdapter adapter : handlerAdapters) {
+            if (adapter.supports(handler)) {
+                return adapter;
+            }
+        }
+        throw new IllegalArgumentException("handler adapter를 찾을 수 없습니다. handler = " + handler);
+    }
+
+    private MyView viewResolver(String viewName) {
+        return new MyView("/WEB-INF/views/" + viewName + ".jsp");
+    }
+}
+```
+
+- 컨트롤러 -> 핸들러
+
+
+# 정리
+
+- v1: 프론트 컨트롤러를 도입
+
+    - 기존 구조를 최대한 유지하면서 프론트 컨트롤러를 도입
+
+- v2: View 분류
+    
+    - 단순 반복 되는 뷰 로직 분리
+
+- v3: Model 추가
+
+    - 서블릿 종속성 제거
+
+    - 뷰 이름 중복 제거
+
+- v4: 단순하고 실용적인 컨트롤러
+
+    - v3와 거의 비슷
+
+    - 구현 입장에서 ModelView를 직접 생성해서 반환하지 않도록 편리한 인터페이스 제공
+
+- v5: 유연한 컨트롤러
+
+    - 어댑터 도입
+    
+    - 어댑터를 추가해서 프레임워크를 유연하고 확장성 있게 설계
+
+### 스프링 MVC
+
+- 지금까지 작성한 코드는 스프링 MVC 프레임워크의 핵심 코드 축약 버전이며, 구조도 거의 같다.
