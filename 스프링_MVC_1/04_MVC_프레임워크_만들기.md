@@ -30,6 +30,8 @@
 
 - 스프링 웹 MVC의 DispatcherServlet 또한 동일한 FrontController로 구현
 
+-----
+
 # 프론트 컨트롤러 도입 - v1
 
 ### 구조
@@ -338,6 +340,7 @@ public class FrontControllerServletV2 extends HttpServlet {
     }
 }
 ```
+-----
 
 # Model 추가 - v3
 
@@ -648,3 +651,229 @@ public class Myview {
 }
 
 ```
+
+-----
+
+# 단순하고 실용적인 컨트롤러 - v4
+
+### 구조
+
+![image](https://github.com/user-attachments/assets/7957edea-93c7-4800-935d-94b3a486c8ae)
+
+- 기본 구조는 이전 v3와 동일하지만 컨트롤러가 ViewName을 반환하도록 수정
+
+- v3는 컨트롤러에서 모델 뷰를 만들어서 반환했지만 v4는 프론트 컨트롤러에서 모델 뷰를 만들어 컨트롤러로 넘어감
+
+### ControllerV4
+
+```JAVA
+package hello.servlet.web.frontcontroller.v4;
+
+import java.util.Map;
+
+public interface ControllerV4 {
+    /**
+     * @param paramMap
+     * @param model
+     * @return viewName
+     */
+    String process(Map<String, String> paramMap, Map<String, Object> model);
+
+}
+```
+
+- 따라서 Controller의 인터페이스의 process는 model이라는 빈 객체를 입력받는다.
+
+### MemberFormControllerV4
+
+```JAVA
+package hello.servlet.web.frontcontroller.v4.controller;
+
+import hello.servlet.web.frontcontroller.v4.ControllerV4;
+import java.util.Map;
+
+public class MemberFormControllerV4 implements ControllerV4 {
+
+    @Override
+    public String process(Map<String, String> paramMap, Map<String, Object> model) {
+            return "new-form";
+    }
+}
+```
+
+### MemberSaveControllerV4
+
+```JAVA
+package hello.servlet.web.frontcontroller.v4.controller;
+
+import hello.servlet.domain.member.Member;
+import hello.servlet.domain.member.MemberRepository;
+import hello.servlet.web.frontcontroller.v4.ControllerV4;
+import java.util.Map;
+
+public class MemberSaveControllerV4 implements ControllerV4 {
+
+    private MemberRepository memberRepository = MemberRepository.getInstance();
+
+    @Override
+    public String process(Map<String, String> paramMap, Map<String, Object> model) {
+        String username = paramMap.get("username");
+        int age = Integer.parseInt(paramMap.get("age"));
+
+        Member member = new Member(username, age);
+        memberRepository.save(member);
+
+        model.put("member", member);
+        return "save-result";
+    }
+}
+```
+
+### MemberListControllerV4
+
+```JAVA
+package hello.servlet.web.frontcontroller.v4.controller;
+
+import hello.servlet.domain.member.Member;
+import hello.servlet.domain.member.MemberRepository;
+import hello.servlet.web.frontcontroller.v4.ControllerV4;
+import java.util.List;
+import java.util.Map;
+
+public class MemberListControllerV4 implements ControllerV4 {
+
+    private MemberRepository memberRepository = MemberRepository.getInstance();
+    @Override
+    public String process(Map<String, String> paramMap, Map<String, Object> model) {
+        List<Member> members = memberRepository.findAll();
+        model.put("members", members);
+        return "members";
+    }
+}
+```
+
+- 입력받은 model에 생성한 객체를 넣어주고 논리 주소만 반환해준다.
+
+### FrontControllerServletV4
+
+```JAVA
+package hello.servlet.web.frontcontroller.v4;
+
+import hello.servlet.web.frontcontroller.MyView;
+import hello.servlet.web.frontcontroller.v4.controller.MemberFormControllerV4;
+import hello.servlet.web.frontcontroller.v4.controller.MemberListControllerV4;
+import hello.servlet.web.frontcontroller.v4.controller.MemberSaveControllerV4;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+@WebServlet(name = "frontControllerServletV4", urlPatterns = "/front-controller/v4/*")
+public class FrontControllerServletV4 extends HttpServlet {
+    private Map<String, ControllerV4> controllerMap = new HashMap<>();
+
+    public FrontControllerServletV4() {
+        controllerMap.put("/front-controller/v4/members/new-form", new MemberFormControllerV4());
+        controllerMap.put("/front-controller/v4/members/save", new MemberSaveControllerV4());
+        controllerMap.put("/front-controller/v4/members", new MemberListControllerV4());
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
+
+        ControllerV4 controller = controllerMap.get(requestURI);
+        if (controller == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        //paramMap
+        Map<String, String> paramMap = createParamMap(request);
+        Map<String, Object> model = new HashMap<>(); // 추가
+        String viewName = controller.process(paramMap, model);
+
+//        /WEB-INF/views/new-form.jsp
+        MyView view = viewResolver(viewName);
+        view.render(model,request,response);
+    }
+
+    private static MyView viewResolver(String viewName) {
+        return new MyView("/WEB-INF/views/" + viewName + ".jsp");
+    }
+
+    private static Map<String, String> createParamMap(HttpServletRequest request) {
+        Map<String, String> paramMap = new HashMap<>();
+        request.getParameterNames().asIterator()
+                .forEachRemaining(paramName -> paramMap.put(paramName, request.getParameter(paramName)));
+        return paramMap;
+    }
+}
+```
+
+- 모델 객체 전달을 위해 model 객체를 생성해 넘겨준다.
+
+- 뷰의 논리 이름을 직접 반환하여 viewResolver을 통해 실제 물리 뷰를 찾는다.
+
+### 정리
+
+- 이전 v3 버전에 뷰의 논리 이름을 반환한다는 작은 변화를 통해 컨트롤러를 구현하는 개발자 입장에서 더욱 편리해졌다.
+
+> 프레임워크나 공통 기능이 수고로워야 사용하는 개발자가 편리해진다.
+
+-----
+
+# 유연한 컨트롤러 - v5
+
+- 현재까지 프론트 컨트롤러는 한가지의 컨트롤러 인터페이스만을 사용
+
+- 개발자에 따라 적용하고 싶은 컨트롤러가 다를 수 있다. -> 이런 경우를 해결하기위해 어댑터 패턴이 추가
+
+### 어댑터 패턴
+
+- 프론트 컨트롤러가 다양한 방식의 컨트롤러를 처리할 수 있도록 변경
+
+### 구조
+
+![image](https://github.com/user-attachments/assets/51efc0e4-4919-4bd6-823f-6ed9c818851b)
+
+- 핸들러 어댑터: 어댑터하는 역할로 다양한 컨트롤러를 호출 가능
+
+- 핸들러: 기존 컨트롤러의 이름을 더 넓은 범위인 핸들러로 변경
+
+    - 컨트롤러의 개념 뿐만 아니라 다른 종류도 어댑터만 있다면 처리 가능하므로
+
+### MyHandlerAdapter
+
+```JAVA
+package hello.servlet.web.frontcontroller.v5;
+
+import hello.servlet.web.frontcontroller.ModelView;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public interface MyHandlerAdapter {
+
+    boolean supports(Object handler);
+    ModelView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws ServletException, IOException;
+}
+```
+
+- boolean supports(Object handler)
+
+    - 어댑터가 해당 컨트롤러 처리 여부 판단 메서드
+ 
+- ModelView handle(HttpServletRequest request, HttpServletResponse response, Object handler)
+
+    - 어댑터를 통해 실제 컨트롤러를 호출하며 결과로 ModelView를 반환
+ 
+    - ModelView를 반환하지 못할 경우, 어댑터가 직접 생성해서라도 반환해야함 (v4는 viewName을 반환하므로 ModelView로 생성하여 반환)
+ 
+    - 프론트 컨트롤러가 호출했던 실제 컨트롤러를 어댑터를 통해 호출
