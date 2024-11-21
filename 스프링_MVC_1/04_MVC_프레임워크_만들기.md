@@ -215,6 +215,8 @@ public class FrontControllerServletV1 extends HttpServlet {
 
 - 모든 컨트롤러에 뷰로 이동하는 부분에 중복이 존재한다.
 
+- View 객체를 따로 생성해 유지보수에 용이하도록 수정정
+
 ```JAVA
 String viewPath = "/WEB-INF/views/save-result.jsp";
 RequestDispatcher dispatcher = request.getRequestDispatcher(viewPath);
@@ -296,7 +298,7 @@ public class MemberFormControllerV2 implements ControllerV2 {
 }
 ```
 
-- 이 컨트롤러처럼 중복되는 부분을 모두 MyView 객체를 생성하고 뷰이름을 넣어 반환한다.
+- 이 컨트롤러처럼 중복되는 부분을 모두 MyView 객체를 생성하고 뷰 이름을 넣어 반환한다.
 
 ### 프론트 컨트롤러 V2
 
@@ -847,7 +849,7 @@ public class FrontControllerServletV4 extends HttpServlet {
 
 - 핸들러: 기존 컨트롤러의 이름을 더 넓은 범위인 핸들러로 변경
 
-    - 컨트롤러의 개념 뿐만 아니라 다른 종류도 어댑터만 있다면 처리 가능하므로
+    - 컨트롤러의 개념 뿐만 아니라 다른 종류도 어댑터만 있다면 처리 가능하기 때문문
 
 ### MyHandlerAdapter
 
@@ -876,7 +878,7 @@ public interface MyHandlerAdapter {
 
     - 어댑터를 통해 실제 컨트롤러를 호출하며 결과로 ModelView를 반환
  
-    - ModelView를 반환하지 못할 경우, 어댑터가 직접 생성해서라도 반환해야함 (v4는 viewName을 반환하므로 ModelView로 생성하여 반환)
+    - ModelView를 반환하지 못 할 경우, 어댑터가 직접 생성해서라도 반환해야함 (v4는 viewName을 반환하므로 ModelView로 생성하여 반환)
  
     - 프론트 컨트롤러가 호출했던 실제 컨트롤러를 어댑터를 통해 호출
 
@@ -957,7 +959,7 @@ public class ControllerV4HandlerAdapter implements MyHandlerAdapter {
 
 - 기존 v4에서 viewName을 반환하는 것을 수정해 ModelView 객체로 만들어 반환한다.
 
-- 즉, 정해진 형식에 맞춰서 반환환
+- 즉, 정해진 형식(ModelView)에 맞춰서 반환해야한다.
 
 ### FrontControllerServletV5
 
