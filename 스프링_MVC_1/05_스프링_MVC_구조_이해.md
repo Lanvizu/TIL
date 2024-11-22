@@ -105,5 +105,137 @@
 
     1. 디스패처 서블릿이 조회한 HttpRequestHandlerAdapter 를 실행하면서 핸들러 정보도 함께 넘겨준다.
 
-    2. HttpRequestHandlerAdapter 는 핸들러인 MyHttpRequestHandler 를 내부에서 실행하고, 그 결과를
-반환한다.
+    2. HttpRequestHandlerAdapter 는 핸들러인 MyHttpRequestHandler 를 내부에서 실행하고, 그 결과를 반환한다.
+
+### 정리
+
+- HandlerMapping = BeanNameUrlHandlerMapping
+
+- HandlerAdapter = HttpRequestHandlerAdapter
+
+-----
+
+# 뷰 리졸버
+
+1. 핸들러 어댑터 호출
+
+- 핸들러 어댑터를 통해 new-form 이라는 논리 뷰 이름을 획득한다.
+
+2. ViewResolver 호출
+
+- new-form 이라는 뷰 이름으로 viewResolver를 순서대로 호출한다.
+
+- BeanNameViewResolver 는 new-form 이라는 이름의 스프링 빈으로 등록된 뷰를 찾아야 하는데 없다.
+
+- InternalResourceViewResolver 가 호출된다.
+
+3. InternalResourceViewResolver
+
+- 이 뷰 리졸버는 InternalResourceView 를 반환한다.
+
+4. 뷰 - InternalResourceView
+
+- InternalResourceView 는 JSP처럼 포워드 forward() 를 호출해서 처리할 수 있는 경우에 사용한다.
+
+5. view.render()
+
+- view.render() 가 호출되고 InternalResourceView 는 forward() 를 사용해서 JSP를 실행한다.
+
+> Thymeleaf 뷰 템플릿을 사용하면 ThymeleafViewResolver를 등록해야함. -> 스프링부트가 작업 자동화
+
+-----
+
+# 스프링 MVC
+
+### @RequestMapping
+
+- RequestMappingHandlerMapping
+
+- RequestMappingHandlerAdapter
+
+- 가장 우선순위가 높은 핸들러 매핑으로 애노테이션 기반의 컨트롤러를 지원하는 핸들러 매핑과 어댑터
+
+**@Controller**
+
+- 스프링이 자동으로 스프링 빈으로 등록한다. (내부에 @Component 애노테이션이 존재해 컴포넌트 스캔의 대상)
+
+**@RequestMapping**
+
+- 요청 정보를 매핑하며 해당 URL이 호출되면 이 메서드가 호출된다.
+
+- 애노테이션을 기반으로 동작하므로, 메서드의 이름을 임의로 지으면 안된다.
+
+**ModelAndView**
+
+모델과 뷰 정보를 담아 반환한다.
+
+# 스프링 MVC - 실용적인 방식
+
+```JAVA
+package hello.servlet.web.springmvc.v3;
+
+import hello.servlet.domain.member.Member;
+import hello.servlet.domain.member.MemberRepository;
+import java.util.List;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+@RequestMapping("/springmvc/v3/members")
+public class SpringMemberControllerV3 {
+
+    private MemberRepository memberRepository = MemberRepository.getInstance();
+
+    @GetMapping("/new-form")
+    public String newForm() {
+        return ("new-form");
+    }
+
+    @PostMapping("/save")
+    public String save(@RequestParam("username") String username,
+                             @RequestParam("age") int age,
+                             Model model) {
+
+        Member member = new Member(username, age);
+        memberRepository.save(member);
+
+        model.addAttribute("member", member);
+        return "save-result";
+    }
+
+    @GetMapping
+    public String members(Model model) {
+        List<Member> members = memberRepository.findAll();
+
+        model.addAttribute("members", members);
+        return "members";
+    }
+}
+
+```
+
+### Model 파라미터
+
+- save(), members() 에 Model을 파라미터로 받음
+
+### ViewName 직접 반환
+
+- 뷰의 논리 이름을 반환
+
+### @RequestParam
+
+- HTTP 요청 파라미터를 직접 @RequestParam으로 받음
+
+- @RequestParam("username") 과 request.getParameter("username") 은 거의 같은 코드
+
+- GET 쿼리 파라미터. POST Form 방식 모두 지원
+
+### @RequestMapping -> @GetMapping, @PostMapping
+
+- URL만 매칭하는 것이 아닌 HTTP Method도 함께 구분 가능
+
+- Get, Post, Put, Delete, Patch 모두 애노테이션 준비되어있음
