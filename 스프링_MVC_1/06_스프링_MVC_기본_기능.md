@@ -746,3 +746,207 @@ public class RequestBodyJsonController {
 - 응답의 경우에도 @ReponseBody를 사용해 해당 객체를 HTTP 메시지 바디에 직접 넣을 수 있다.
 
 > HttpEntity 를 사용해도 된다.
+
+-----
+
+# HTTP 응답 - 정적 리소스, 뷰 템플릿
+
+스프링(서버)에서 응답 데이터를 만드는 방법 3가지
+
+- 정적 리소스
+
+    - 정적인 HTML, css, js를 제공할 때, 정적 리소스 사용
+
+- 뷰 템플릿 사용
+
+    - 웹 브라우저에 동적인 HTML을 제공할 때 뷰 템플릿을 사용
+ 
+- HTTP 메시지 사용
+
+    - HTTP API를 제공할 때 데이터를 전달하는 상황에서 HTTP 메시지 바디에 JSON 같은 형식으로 데이터를 실어 보냄
+
+## 정적 리소스
+
+> /static , /public , /resources , /META-INF/resources
+
+- 다음 디렉토리에 있는 정적 리소스를 제공
+
+## 뷰 템플릿
+
+- 뷰 템플릿을 거쳐 HTML이 생성되고, 뷰가 응답을 만들어 전달
+
+```HTML
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+ <meta charset="UTF-8">
+ <title>Title</title>
+</head>
+<body>
+<p th:text="${data}">empty</p>
+</body>
+</html>
+```
+
+```JAVA
+package hello.springmvc.basic.response;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+public class ResponseViewController {
+    @RequestMapping("/response-view-v1")
+    public ModelAndView responseViewV1() {
+        ModelAndView mav = new ModelAndView("response/hello")
+                .addObject("data", "hello!");
+        return mav;
+    }
+    @RequestMapping("/response-view-v2")
+    public String responseViewV2(Model model) {
+        model.addAttribute("data", "hello!!");
+        return "response/hello";
+    }
+
+//    권장하지 않는 방법: view 이름이 명확하지 않음
+    @RequestMapping("/response/hello")
+    public void responseViewV3(Model model) {
+        model.addAttribute("data", "hello!!");
+    }
+}
+```
+
+- @ResponseBody 가 없으면 reponse/hello로 뷰 리졸버가 실행되어 뷰를 찾고 렌더링 진행
+
+- @ResponseBody 가 있는 경우 뷰 리졸버가 실행되지 않고, HTTP 메시지 바디에 직접 response/hello 라는 문자가 입력
+
+- v3은 void로 반환하여 명시성이 너무 떨어지고, 이렇게 딱 맞는 경우도 많이 없어 권장하지 않는 방법
+
+### HTTP 메시지
+
+- @ResponseBody, HttpEntity를 사용 시 뷰 템플릿을 사용하는 것이 아니라 HTTP 메시지 바디에 직접 응답 데이터를 출력
+
+-----
+
+# HTTP 응답 - HTTP API, 메시지 바디에 직접 입력
+
+```JAVA
+package hello.springmvc.basic.response;
+
+import hello.springmvc.basic.HelloData;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@Slf4j
+@Controller
+//@RestController
+public class ResponseBodyController {
+    @GetMapping("/response-body-string-v1")
+    public void responseBodyV1(HttpServletResponse response) throws IOException
+    {
+        response.getWriter().write("ok");
+    }
+    /**
+     * HttpEntity, ResponseEntity(Http Status 추가)
+     * @return
+     */
+    @GetMapping("/response-body-string-v2")
+    public ResponseEntity<String> responseBodyV2() {
+        return new ResponseEntity<>("ok", HttpStatus.OK);
+    }
+    @ResponseBody
+    @GetMapping("/response-body-string-v3")
+    public String responseBodyV3() {
+        return "ok";
+    }
+    @GetMapping("/response-body-json-v1")
+    public ResponseEntity<HelloData> responseBodyJsonV1() {
+        HelloData helloData = new HelloData();
+        helloData.setUsername("userA");
+        helloData.setAge(20);
+        return new ResponseEntity<>(helloData, HttpStatus.OK);
+    }
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    @GetMapping("/response-body-json-v2")
+    public HelloData responseBodyJsonV2() {
+        HelloData helloData = new HelloData();
+        helloData.setUsername("userA");
+        helloData.setAge(20);
+        return helloData;
+    }
+}
+```
+
+## @RestController
+
+- @Controller + @ResponseBody 로 모든 컨트롤러에 적용되는 효과
+
+- Rest API(HTTP API)를 만들 때 사용하는 컨트롤러
+
+----- 
+
+# HTTP 메시지 컨버터
+
+![image](https://github.com/user-attachments/assets/df883c40-94cc-4bfb-838f-4e423d5ee169)
+
+- @ResponseBody
+
+    - HTTP의 BODY에 문자 내용을 직접 반환
+ 
+    - viewResolver 대신 HttpMessageConverter 동작
+ 
+    - 기본 문자처리: StringHttpMessageConverter
+ 
+    - 기본 객체처리: MappingJackson2HttpMessageConverter
+ 
+- HTTP 요청: @RequestBody , HttpEntity(RequestEntity)
+
+- HTTP 응답: @ResponseBody , HttpEntity(ResponseEntity)
+
+### 스프링 부트 기본 메시지 컨버터
+
+- 대상 클래스 타입과 미디어 타입 둘을 체크해 사용여부를 결정
+
+- 만족하지 않을 시 다음 메시지 컨버터로 우선순위 넘어감
+
+## 요청 매핑 핸들러 어뎁터 구조
+
+- @RequestMapping를 처리하는 핸들러 어댑처인 RequestMappingHandlerAdapter
+
+![image](https://github.com/user-attachments/assets/8ab4f5cf-f6a7-456f-ab0a-715d7e6034f8)
+
+### ArgumentResolver
+
+- 다양한 파라미터를 유연하게 처리할 수 있는 이유
+
+- 애노테이션 기반 컨트롤러를 처리하는 RequestMappingHandlerAdapter가 ArgumentResolver을 호출해 컨트롤러(핸들러)가 필요로 하는 다양한 파라미터의 값(객체)을 생성
+
+- 파라미터의 값이 준비되면 컨트롤러를 호출하면서 값을 넘김
+
+### 동작 방식
+
+ArgumentResolver 의 supportsParameter()를 호출해 파라미터 지원 여부를 체크하여 resolveArgument()를 호출해 실제 객체를 생성
+
+### ReturnValueHandler
+
+- ArgumentResolver와 비슷하며 응답 값을 변환하고 처리
+
+- 컨트롤러에서 String으로 뷰 이름을 반환해도, 동작하는 이유
+
+## HTTP 메시지 컨버터
+
+![image](https://github.com/user-attachments/assets/bf8b391a-46d5-4b46-8aa5-3a88aa9e526b)
+
+- 요청의 경우: ArgumentResolver 들이 HTTP 메시지 컨버터를 사용해 필요한 객체를 생성
+
+- 응답의 경우: ReturnValueHandler 내부 HTTP 메시지 컨버터를 호출해 응답 결과를 생성
