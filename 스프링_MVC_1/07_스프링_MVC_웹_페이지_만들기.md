@@ -271,4 +271,4 @@ public String addItemV6(Item item, RedirectAttributes redirectAttributes) {
 
 - 리다이렉트할 때 간단하게 status=true를 추가해 값의 유무에 따라 메시지 출력 가능
 
-- RedirectAttributes을 사용 시 URL 인코딩도 해주며, pathVariable, 쿼리 파라미터까지 처리리
+- RedirectAttributes을 사용 시 URL 인코딩도 해주며, pathVariable, 쿼리 파라미터까지 처리
