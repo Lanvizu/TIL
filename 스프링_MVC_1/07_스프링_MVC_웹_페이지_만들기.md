@@ -14,7 +14,7 @@
 
 ### 상품 서비스 HTML
 
-> 부트스트랩 - 웹 사이트를 쉽게 만들 수 있게 도와주는 HTML, CSS, JS 프레임워크이다.
+> 부트스트랩 - 웹 사이트를 쉽게 만들 수 있게 도와주는 HTML, CSS, JS 프레임워크
 >
 > 하나의 CSS로 다양한 기기에서 작동하며 쉽게 웹사이트를 제작, 유지, 보수 가능
 
@@ -34,7 +34,7 @@ public BasicItemController(ItemRepository itemRepository) {
 
 - 생성자가 하나만 있는 경우 스프링이 해당 생성자에 @Autowired로 의존관계 주입
 
-- 꼭 final 키워드를 붙여야 의존관계 주입이 된다.
+- 꼭 final 키워드를 붙여야 의존관계 주입
 
 ### 속성 변경 - th:href
 
@@ -218,7 +218,7 @@ public class BasicItemController {
 
 ## V4
 
-- @ModelAttribute 자체도 생략 가능하며 대상 객체는 모델에 자동 등록된다.
+- @ModelAttribute 자체도 생략 가능하며 대상 객체는 모델에 자동 등록
 
 # PRG Post/Redirect/Get
 
