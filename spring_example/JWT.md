@@ -124,6 +124,10 @@
 
 # JWT 구현
 
+<details>
+  
+<summary>구현 과정</summary>
+
 > Spring Security 6.1부터 기존에 사용하던 and(), non-Lambda DSL Method가 Deprecated되고, Lambda DSL을 필수로 사용하도록 변경되었다.
 
 ### 기술 스택
@@ -928,6 +932,8 @@ public class LoginServiceImpl implements LoginService {
 - 사용자가 로그인 하면 기존에 저장되어 있던 사용자의 Refresh Token을 모두 제거한다.
 
 - 그리 새로운 토큰을 생성하고 저장한 후 사용자에게 반환한다.
+
+</details>
 
 -----
 
