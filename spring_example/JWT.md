@@ -92,8 +92,6 @@
 
 > 세션이 유지되는 것과 같은 효과
 
------
-
 ### 세션과 JWT 인증 방법의 차이점
 
 1. 확장성
@@ -122,3 +120,18 @@
 
     - 서명을 통해 데이터 무결성을 보장하므로, 토큰이 변조되면 쉽게 탐지 가능하다.
   
+-----
+
+# JWT 구현
+
+> Spring Security 6.1부터 기존에 사용하던 and(), non-Lambda DSL Method가 Deprecated되고, Lambda DSL을 필수로 사용하도록 변경되었다.
+
+### 기술 스택
+
+- Spring Boot 3.3.1
+- Spring Security 6.3.1
+- JPA
+- JWT(Access Token, Refresh Token)
+- Spring Security 6.1 이후 lambda 문법을 이용한 코드 적용
+
+## 
