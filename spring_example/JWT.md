@@ -968,3 +968,11 @@ public class LoginServiceImpl implements LoginService {
 ### 관리자 삭제
 
 ![image](https://github.com/user-attachments/assets/2b7a95b5-9a53-41fd-9bf0-6e6ad2b462b0)
+
+### 참고
+
+[장쫄깃 기술블로그 JWT](https://jangjjolkit.tistory.com/26)
+
+[장쫄깃 기술블로그 JWT 구현](https://jangjjolkit.tistory.com/72)
+
+[Refresh Token](https://pragmaticwebsecurity.com/articles/oauthoidc/refresh-token-protection-implications)
