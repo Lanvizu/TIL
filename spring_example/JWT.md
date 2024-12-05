@@ -928,3 +928,43 @@ public class LoginServiceImpl implements LoginService {
 - 사용자가 로그인 하면 기존에 저장되어 있던 사용자의 Refresh Token을 모두 제거한다.
 
 - 그리 새로운 토큰을 생성하고 저장한 후 사용자에게 반환한다.
+
+-----
+
+## 테스트
+
+### 유저 등록
+
+![image](https://github.com/user-attachments/assets/6b9c9625-447d-4139-ae76-70f233ff41a2)
+
+### 유저 로그인
+
+![image](https://github.com/user-attachments/assets/3eb3bd50-e675-480e-bca4-5b7ffc0255db)
+
+### 유저 정보 확인
+
+![image](https://github.com/user-attachments/assets/8cb4fe77-1112-44dd-9850-069195a2acda)
+
+### 유저 삭제
+
+![image](https://github.com/user-attachments/assets/a94bbe32-768a-42df-b202-f61c00d9e882)
+
+- 권한이 없는 유저는 삭제 불가
+
+### 관리자 생성
+
+![image](https://github.com/user-attachments/assets/9cb5a13f-20bb-4734-9103-65874057711b)
+
+### 관리자 로그인
+
+![image](https://github.com/user-attachments/assets/fea1d997-b7ca-4071-a552-804544249b44)
+
+### Refresh Token 사용
+
+![image](https://github.com/user-attachments/assets/0f16123b-e219-4339-8713-7b50eb155e6f)
+
+> 로그아웃 없이 연속으로 로그인 후 진행하면 에러 발생
+
+### 관리자 삭제
+
+![image](https://github.com/user-attachments/assets/2b7a95b5-9a53-41fd-9bf0-6e6ad2b462b0)
