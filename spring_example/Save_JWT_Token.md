@@ -72,6 +72,55 @@ Access Token을 서버의 메모리에 저장하는 방식
 XSS
 CSRF 정리
 
+Refresh Token - Access Token을 재발급하기 위한 토큰
+
+Access Token이 만료되면 클라이언트는 RefreshToken을 통해 서버로 부터 AccessToken을 재발급
+-> 연속적인 사용자 인증이 가능, 사용자가 다시 로그인할 필요 없어짐
+
+하지만 만료기간이 Access Token에 비해 길어 탈취당할 경우 해커가 Access Token을 재발급 가능 
+-> Refresh Token의 보안성이 더 중요
+
+Refresh Token 역시 JWT로 구현
+페이로드 부분의 최소한의 데이터를 가지고 DB에 접근하여 Access Token 재발급
+
+AccessToken과 마찬가지로 Self-cotained(자체 데이터 포함) 특징으로 DB이 접근을 없앨 수 있지만 
+AccessToken의 유효성 연장 이외의 정보들을 포함하여 보안적으로 취약점이 생길 수 있다.
+-> self-contained 특성은 사용하지 않도록 하자
+
+refreshtoken의 저장 위치
+
+accestoken과 동일하게 
+로컬스토리지
+세션스토리지
+Http-only 쿠키
+메모리
+
+추가로 서버 DB에서 관리
+쿠키 보다는 보안적으로 우수한 서버를 사용한 방식
+
+RTR (Refresh Token Rotation)
+
+Refresh Token이 단 한번의 재발급만 허용하는 방식으로
+한번의 재발급을 진행할 때 Refresh Token 또한 재발급 받는다.
+이때 사용자와 연결된 모든 Refresh Token은 무효화 시킨다. -> 해커가 먼저 재발급 요청을 한 경우를 방지하기 위해.
+
+즉 해커든 사용자든 Refresh Token에 대한 Replay Attack이 감지되면 토큰을 모두 무효화시키는 방법으로 보안을 강화
+
+----
+
+나는 내 프로젝트인 NIHo에 적용하기 위해 적합한 조합을 찾아봤다.
+
+Access Token은 로컬과 세션 스토리지를 통한 방법은 XSS 공격에 위험해 배제했다.
+쿠키와 메모리 방식을 후보에 둔 상태로 Refresh Token 방식을 고민
+
+
+토큰 방식으로 진행할 때의 장점중 stateless를 유지하기 위해 refresh token 역시 쿠키에 저장하는 것을 고민했다.
+하지만 Redis 서버를 사용하게되면 찾는 시간이 약 O(1) 로 매우 작게 걸린다고 한다 -> 정보 추가 필요
+또한 Access Token보다 보안적으로 더 중요하다고 생각해 서버(Redis)에 저장하는 방식을 선택하는 것이 좋다고 판단.
+그리고 RTR을 적용시킨다.
+이때 Access Token으로 메모리 방식을 선택한다면 새로고침을 할때마다 매번 새롭게 로그인을 해야하므로 사용자가 불편할 것이라 생각했으며,
+메모리 방식 역시 XSS 공격에 완벽하게 보호되지 않으므로 쿠키를 사용하여 추가 설정을 통해 보안을 강화하는 방식을 선택했다.
+
 
 
 
