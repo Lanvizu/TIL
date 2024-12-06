@@ -144,39 +144,52 @@ Access Token과 Refresh Token을 나눠 분석
 
 - Access Token을 재발급하기 위한 토큰
 
-Access Token이 만료되면 클라이언트는 RefreshToken을 통해 서버로 부터 AccessToken을 재발급
--> 연속적인 사용자 인증이 가능, 사용자가 다시 로그인할 필요 없어짐
+- Access Token이 만료되면 클라이언트는 RefreshToken을 통해 서버로 부터 AccessToken을 재발급
 
-하지만 만료기간이 Access Token에 비해 길어 탈취당할 경우 해커가 Access Token을 재발급 가능 
--> Refresh Token의 보안성이 더 중요
+- 연속적인 사용자 인증이 가능하며 사용자가 다시 로그인 불필요
 
-Refresh Token 역시 JWT로 구현
-페이로드 부분의 최소한의 데이터를 가지고 DB에 접근하여 Access Token 재발급
+- 하지만 만료기간이 Access Token에 비해 길어 탈취당할 경우 해커가 Access Token을 재발급 가능
 
-AccessToken과 마찬가지로 Self-cotained(자체 데이터 포함) 특징으로 DB이 접근을 없앨 수 있지만 
-AccessToken의 유효성 연장 이외의 정보들을 포함하여 보안적으로 취약점이 생길 수 있다.
--> self-contained 특성은 사용하지 않도록 하자
+- **Refresh Token의 보안성이 더 중요**
 
-refreshtoken의 저장 위치
+- Refresh Token 역시 JWT로 구현하며 페이로드 부분의 최소한의 데이터를 가지고 DB에 접근하여 Access Token 재발급
 
-accestoken과 동일하게 
-로컬스토리지
-세션스토리지
-Http-only 쿠키
-메모리
+## Refresh Token 저장 위치
 
-추가로 서버 DB에서 관리
-쿠키 보다는 보안적으로 우수한 서버를 사용한 방식
+- Access Token과 동일한 위치도 가능하며 추가로 DB에서 관리하는 것도 고려
 
-RTR (Refresh Token Rotation)
+> 로컬 스토리지, 세션 스토리지, HttpOnly 쿠키, 메모리
 
-Refresh Token이 단 한번의 재발급만 허용하는 방식으로
-한번의 재발급을 진행할 때 Refresh Token 또한 재발급 받는다.
-이때 사용자와 연결된 모든 Refresh Token은 무효화 시킨다. -> 해커가 먼저 재발급 요청을 한 경우를 방지하기 위해.
+### 서버 DB (Redis, RDBMS)
 
-즉 해커든 사용자든 Refresh Token에 대한 Replay Attack이 감지되면 토큰을 모두 무효화시키는 방법으로 보안을 강화
+- 세션 인증 방식처럼 (쿠키보다) 보안적으로 더 우수한 방식
 
-----
+- 하지만 토큰 방식의 Stateless 특성이 사라짐
+
+## RTR (Refresh Token Rotation)
+
+- Refresh Token이 단 한 번의 재발급만 허용하는 방식
+
+- 한 번의 재발급을 진행할 때 Refresh Token 또한 재발급
+
+- 이때 사용자와 연결된 모든 Refresh Token은 무효화
+
+- 해커가 먼저 재발급 요청을 한 경우를 방지하기 위함
+
+- 즉, 해커든 사용자든 Refresh Token에 대한 Replay Attack이 감지되면 토큰을 모두 무효화시키는 방법으로 보안을 강화하는 방식
+
+![image](https://github.com/user-attachments/assets/9da40f1e-d651-4d59-8d95-b477efce3598)
+
+### 고려할 부분
+
+- AccessToken과 마찬가지로 Self-cotained(자체 데이터 포함) 특징으로 DB에 접근하지 않도록 설정 가능: Stateless 유지
+
+- 하지만 AccessToken의 유효성 연장 이외의 정보들을 포함하여 보안적으로 취약점이 생길 수 있음
+
+- 완전한 Stateless 시스템은 아닐지라도 보안을 생각해 DB에 접근하도록 설정
+
+-----
+
 
 나는 내 프로젝트인 NIHo에 적용하기 위해 적합한 조합을 찾아봤다.
 
