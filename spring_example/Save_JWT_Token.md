@@ -129,6 +129,8 @@ Access Token과 Refresh Token을 나눠 분석
 
 - 하지만 SPA(Single Page Application)를 사용해 페이지를 이동하는 것처럼 보여도 실제로는 이동하지 않아 private 변수가 유지
 
+> 라우팅 변경 시 JavaScript 변수 초기화 될 수 있음
+
 - 새로고침을 하게되면 private 변수가 소멸되어 다시 로그인 해야함
 
 - 스크립트를 통해서 메모리 공간을 직접적으로 제어할 수 없으므로 XSS 공격에 의해 쉽게 탈취 불가
