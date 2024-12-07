@@ -182,14 +182,15 @@ Access Token과 Refresh Token을 나눠 분석
 
 ### 고려할 부분
 
-- AccessToken과 마찬가지로 Self-cotained(자체 데이터 포함) 특징으로 DB에 접근하지 않도록 설정 가능: Stateless 유지
+- AccessToken과 마찬가지로 Self-cotained(자체 데이터 포함)특징으로 DB에 접근하지 않도록 설정 가능: Stateless 유지
 
 - 하지만 AccessToken의 유효성 연장 이외의 정보들을 포함하여 보안적으로 취약점이 생길 수 있음
 
 - 완전한 Stateless 시스템은 아닐지라도 보안을 생각해 DB에 접근하도록 설정
 
------
+- 클라이언트 측에서 저장할 위치와 서버 측에 저장할 위치를 고민 (HttpOnly 쿠키 & Redis)
 
+-----
 
 나는 내 프로젝트인 NIHo에 적용하기 위해 적합한 조합을 찾아봤다.
 
