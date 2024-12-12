@@ -78,5 +78,5 @@
 </details>
 
 
-[네이버 블로그](https://blog.naver.com/ghzm888)
+[WIL](https://blog.naver.com/ghzm888)
 
