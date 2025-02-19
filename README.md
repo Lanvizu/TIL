@@ -80,7 +80,3 @@
 - [07 스프링 MVC 웹 페이지 만들기](./스프링_MVC_1/07_스프링_MVC_웹_페이지_만들기.md)
   
 </details>
-
-
-[WIL BLOG](https://blog.naver.com/ghzm888)
-
