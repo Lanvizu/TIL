@@ -1,10 +1,6 @@
 # TIL
 
-## 정리
-
-<details>
-  
-<summary> 정리 중 </summary>
+## 정리 중
 
 - [SRP](./spring_example/SRP.md)
   
@@ -29,7 +25,6 @@
 - [JWT](./spring_example/JWT.md)
   
 - [Save JWT Token](spring_example/Save_JWT_Token.md)
-</details>
 
 ## 스프링 핵심 원리 - 기본편
 
