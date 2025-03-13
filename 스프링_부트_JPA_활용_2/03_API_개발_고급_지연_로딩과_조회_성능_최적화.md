@@ -81,3 +81,61 @@ public class JpashopApplication {
 > 즉시 로딩 시 성능 튜닝이 매우 어려워짐
 >
 > 항상 지연 로딩을 기본으로 설정, 최적화가 필요한 경우 페치 조인(fetch join) 사용
+
+-----
+
+# 간단한 주문 조회 V2: 엔티티를 DTO로 변환
+
+### OrderSimpleApiController
+
+```Java
+   /**
+ * V2. 엔티티를 조회해서 DTO로 변환(fetch join 사용X)
+ * - 단점: 지연로딩으로 쿼리 N번 호출
+ */
+    @GetMapping("/api/v2/simple-orders")
+    public Result ordersV2() {
+        List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+        List<SimpleOrderDto> collect = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
+                .collect(Collectors.toList());
+        return new Result(collect);
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class Result<T> {
+        private T data;
+    }
+
+    @Data
+    static class SimpleOrderDto {
+        private Long orderId;
+        private String name;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private Address address;
+
+        public SimpleOrderDto(Order order) {
+            orderId = order.getId();
+            name = order.getMember().getName(); //LAZY 초기화
+            orderDate = order.getOrderDate();
+            orderStatus = order.getStatus();
+            address = order.getDelivery().getAddress(); //LAZY 초기화
+        }
+    }
+```
+
+- 엔티티를 DTO로 변환하는 일반적인 방법
+
+- 쿼리가 총 1 + N + N 번 실행 (v1과 쿼리수 결과는 동일)
+
+   - order 조회 1번 (order 조회 결과 수: N)
+ 
+   - order -> member 지연 로딩 조회 N 번
+ 
+   - order -> delivery 지연 로딩 조회 N 번
+ 
+   - 지연 로딩은 영속성 컨텍스트에서 조회하므로, 이미 조회된 경우 쿼리를 생략한다.
+
+> 그렇다고 EAGER로 변환 시 예측할 수 없는 쿼리가 발생
