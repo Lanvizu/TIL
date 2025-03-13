@@ -139,3 +139,143 @@ public class JpashopApplication {
    - 지연 로딩은 영속성 컨텍스트에서 조회하므로, 이미 조회된 경우 쿼리를 생략한다.
 
 > 그렇다고 EAGER로 변환 시 예측할 수 없는 쿼리가 발생
+
+-----
+
+# 간단한 주문 조회 V3: 엔티티를 DTO로 변환 - 페치 조인 최적화
+
+- 성능 문제의 거의 90% 는 N + 1 에서 발생
+
+- 이를 해결하기 위해 페치 조인 적용
+
+### OrderSimpleApiController - 추가
+
+```Java
+    @GetMapping("api/v3/simple-orders")
+    public Result orderV3() {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery();
+        List<SimpleOrderDto> collect = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
+                .collect(Collectors.toList());
+        return new Result(collect);
+    }
+```
+
+### OrderRepository
+
+```Java
+public List<Order> findAllWithMemberDelivery() {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class
+        ).getResultList();
+    }
+```
+
+- 엔티티를 페치 조인(fetch join)을 사용해서 쿼리 1번에 조회
+
+- order -> member, order -> delivery는 이미 조회 된 상태이므로 지연 로딩(Lazy Loading) X
+
+> 실무에서 많이 사용하는 방식
+
+-----
+
+# 간단한 주문 조회 V4: JPA에서 DTO로 바로 조회
+
+### OrderSimpleApiController - 추가
+
+```Java
+@GetMapping("api/v4/simple-orders")
+    public Result ordersV4() {
+        List<OrderSimpleQueryDto> orderDtos = orderRepository.findOrderDtos();
+        return new Result(orderDtos);
+    }
+```
+
+### OrderRepository
+
+```Java
+public List<OrderSimpleQueryDto> findOrderDtos() {
+        return em.createQuery(
+                "select new jpashop.jpashop.repository.OrderSimpleQueryDto(o.id, m.name, o.orderDate, o.status, d.address)" +
+                        " from Order o" +
+                        " join o.member m" +
+                        " join o.delivery d", OrderSimpleQueryDto.class
+                ).getResultList();
+    }
+```
+
+### OrderSimpleQueryDto
+
+```Java
+package jpashop.jpashop.repository;
+
+import jpashop.jpashop.domain.Address;
+import jpashop.jpashop.domain.OrderStatus;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+public class OrderSimpleQueryDto {
+    private Long orderId;
+    private String name;
+    private LocalDateTime orderDate;
+    private OrderStatus orderStatus;
+    private Address address;
+
+    public OrderSimpleQueryDto(Long orderId, String name, LocalDateTime orderDate, OrderStatus orderStatus, Address address) {
+        this.orderId = orderId;
+        this.name = name;
+        this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
+        this.address = address;
+    }
+}
+```
+
+- 일반적인 SQL을 사용할 때 처럼 원하는 값을 선택해서 조회
+- new 명령어를 통해 JPQL의 결과를 DTO로 즉시 변환
+- SELECT 절에서 원하는 데이터를 직접 선택하므로 DB -> 애플리케이션 네트웍 용량 최적화(생각보다 미비)
+- 리포지토리 재사용성 떨어짐, API 스펙에 맞춘 코드가 리포지토리에 들어가는 단점
+
+> 물리적으로는 계층이 나눠져있지만, 논리적으로는 계층이 깨져있는 상태
+>
+> 대부분의 경우 성능차이가 거의 나지 않는다 (네트워크가 좋아서 + join에서 대부분의 성능 문제가 생김)
+
+-----
+
+# 정리
+
+## 쿼리 방식 선택 권장 순서
+
+1. 우선 엔티티를 DTO로 변환하는 방법을 선택한다.
+
+2. 필요하면 페치 조인으로 성능을 최적화한다. -> 대부분의 성능 이슈가 해결
+
+3. DTO로 직접 조회하는 방법을 사용한다.
+
+4. 최후의 방법은 JPA가 제공하는 네이티브 SQL이나 스프링 JDBC Template로 직접 SQL을 사용
+
+### V2
+
+![image](https://github.com/user-attachments/assets/06d0f854-74a4-439a-8535-e84a653fd028)
+
+### V3
+
+![image](https://github.com/user-attachments/assets/c7f62340-5379-4fc9-b62b-b39d357313ec)
+
+### V4
+
+![image](https://github.com/user-attachments/assets/498d2239-1f76-46ef-bb79-330fe32dacc7)
+
+> V2: 67ms
+> 
+> V3: 42ms
+> 
+> V4: 1.39s
+> 
+> 미미하지만 Response Time 차이가 존재했다.
+> 
+> 데이터가 많아진다면 차이는 더욱 커질 것이라고 생각한다.
