@@ -1,31 +1,5 @@
 # TIL
 
-## 정리 중
-
-- [SRP](./spring_example/SRP.md)
-  
-- [OOP](./spring_example/OOP.md)
-
-- [RESTful API](./spring_example/RESTful_API.md)
-
-- [API 명세서](./spring_example/API_명세서_정리.md)
-
-- [Data Structure](./spring_example/Data_Structure.md)
-
-- [Database](./spring_example/Database.md)
-
-- [Cache](./spring_example/Cache.md)
-  
-- [Dijkstra](./Alogorithm/Dijkstra.md)
-  
-- [Shallow copy & Deep copy](./spring_example/Shallow_copy_&_Deep_copy.md)
-
-- [Builder Pattern](spring_example/Builder_Pattern.md)
-
-- [JWT](./spring_example/JWT.md)
-  
-- [Save JWT Token](spring_example/Save_JWT_Token.md)
-
 ## 스프링 핵심 원리 - 기본편
 
 2024-11-01 ~ 2024-11-18
@@ -97,5 +71,30 @@
 
 - [04 컬렉션 조회 최적화](./스프링_부트_JPA_활용_2/04_컬렉션_조회_최적화.md)
 
+## 정리 중
+
+- [SRP](./spring_example/SRP.md)
+  
+- [OOP](./spring_example/OOP.md)
+
+- [RESTful API](./spring_example/RESTful_API.md)
+
+- [API 명세서](./spring_example/API_명세서_정리.md)
+
+- [Data Structure](./spring_example/Data_Structure.md)
+
+- [Database](./spring_example/Database.md)
+
+- [Cache](./spring_example/Cache.md)
+  
+- [Dijkstra](./Alogorithm/Dijkstra.md)
+  
+- [Shallow copy & Deep copy](./spring_example/Shallow_copy_&_Deep_copy.md)
+
+- [Builder Pattern](spring_example/Builder_Pattern.md)
+
+- [JWT](./spring_example/JWT.md)
+  
+- [Save JWT Token](spring_example/Save_JWT_Token.md)
 
 
