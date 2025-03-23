@@ -87,7 +87,7 @@
 
 - [Cache](./spring_example/Cache.md)
   
-- [Dijkstra](./Alogorithm/Dijkstra.md)
+- [Dijkstra](./Algorithm/Dijkstra.md)
   
 - [Shallow copy & Deep copy](./spring_example/Shallow_copy_&_Deep_copy.md)
 
