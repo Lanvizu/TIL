@@ -1,5 +1,13 @@
 # TIL
 
+## Design Pattern
+
+- [Design Pattern Overview](/Design_Pattern/Design_Pattern_Overview.md)
+
+- [Single Pattern](./Design_Pattern/Singleton_Pattern.md)
+
+- [Builder Pattern](./Design_Pattern/Builder_Pattern.md)
+
 ## 스프링 핵심 원리 - 기본편
 
 - [01 스프링과 객체 지향 설계](./스프링_핵심_원리_기본/01_스프링과_객체_지향_설계.md)
@@ -63,6 +71,8 @@
 
 - [04 컬렉션 조회 최적화](./스프링_부트_JPA_활용_2/04_컬렉션_조회_최적화.md)
 
+- [05 실무 필수 최적화](./스프링_부트_JPA_활용_2/05_실무_필수_최적화.md)
+
 ## 정리 중
 
 - [SRP](./spring_example/SRP.md)
@@ -82,8 +92,6 @@
 - [Dijkstra](./Algorithm/Dijkstra.md)
   
 - [Shallow copy & Deep copy](./spring_example/Shallow_copy_&_Deep_copy.md)
-
-- [Builder Pattern](spring_example/Builder_Pattern.md)
 
 - [JWT](./spring_example/JWT.md)
   
