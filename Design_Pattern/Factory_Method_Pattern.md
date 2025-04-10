@@ -1,4 +1,4 @@
-# Factory Pattern
+# Factory Method Pattern
 
 - **생성(Creational) 디자인 패턴** 중 하나로, 객체 생성 로직을 캡슐화하여 클라이언트 코드에서 객체 생성 과정을 분리하는 패턴
   
