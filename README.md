@@ -9,6 +9,10 @@
 - [Strategy Pattern](./Design_Pattern/Strategy_Pattern.md)
   
 - [Template Method Pattern](./Design_Pattern/Template_Method_Pattern.md)
+  
+- [Factory Method Pattern](./Design_Pattern/Factory_Method_Pattern.md)
+  
+- [Adapter Pattern](./Design_Pattern/Adapter_Pattern.md)
 
 - [Builder Pattern](./Design_Pattern/Builder_Pattern.md)
 
