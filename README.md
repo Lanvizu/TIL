@@ -1,5 +1,7 @@
 # TIL
 
+> 공부 과정 기록
+
 ## Design Pattern
 
 - [Design Pattern Overview](/Design_Pattern/Design_Pattern_Overview.md)
