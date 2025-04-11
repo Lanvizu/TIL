@@ -16,6 +16,14 @@
 
 - [Builder Pattern](./Design_Pattern/Builder_Pattern.md)
 
+## Network
+
+- [OSI 7계층](./Network/OSI_7계층.md)
+
+- [HTTP와 HTTPS](./Network/HTTP와_HTTPS.md)
+
+- [HTTP와 HTTPS 동작 과정](./Network/HTTP와_HTTPS_동작_과정.md)
+
 ## 스프링 핵심 원리 - 기본편
 
 - [01 스프링과 객체 지향 설계](./스프링_핵심_원리_기본/01_스프링과_객체_지향_설계.md)
