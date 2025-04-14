@@ -26,6 +26,12 @@
 
 - [HTTP와 HTTPS 동작 과정](./Network/HTTP와_HTTPS_동작_과정.md)
 
+- [CORS](./Network/CORS.md)
+
+- [GET 메서드와 POST 메서드](./Network/GET_메서드와_POST_메서드.md)
+
+- [쿠키와 세션](./Network/쿠키와_세션.md)
+
 ## 스프링 핵심 원리 - 기본편
 
 - [01 스프링과 객체 지향 설계](./스프링_핵심_원리_기본/01_스프링과_객체_지향_설계.md)
