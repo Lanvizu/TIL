@@ -32,6 +32,10 @@
 
 - [쿠키와 세션](./Network/쿠키와_세션.md)
 
+- [REST와 RESTful API](./Network/REST와_RESTful_API.md)
+
+- [WebSocket과 Socket.io](./Network/WebSocket과_Socket.io.md)
+
 ## 스프링 핵심 원리 - 기본편
 
 - [01 스프링과 객체 지향 설계](./스프링_핵심_원리_기본/01_스프링과_객체_지향_설계.md)
