@@ -36,6 +36,13 @@
 
 - [WebSocket과 Socket.io](./Network/WebSocket과_Socket.io.md)
 
+## Java
+
+- [Java 언어 장단점](./Java/Java_언어_장단점.md)
+
+- [Java 접근 제어자 종류와 특징](./Java/Java_접근_제어자_종류와_특징.md)
+
+
 ## 스프링 핵심 원리 - 기본편
 
 - [01 스프링과 객체 지향 설계](./스프링_핵심_원리_기본/01_스프링과_객체_지향_설계.md)
