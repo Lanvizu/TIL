@@ -1,7 +1,7 @@
 # OOP
-Object-Oriented Programming (OOP)는 '객체'라는 개념을 중심으로 사고하는 방식을 요구한다.
+**Object-Oriented Programming**(OOP)는 '객체'라는 개념을 중심으로 사고하는 방식을 요구한다.
 
-프로그램내에서 객체들이 주체성을 가진 존재처럼 행동하는 환경을 만들어낸다.
+프로그램내에서 객체들이 **주체성**을 가진 존재처럼 행동하는 환경을 만들어낸다.
 
 ![image](https://github.com/user-attachments/assets/1bc0c391-a9da-4ea4-a59a-aa7878f2ac69)
 
