@@ -44,6 +44,12 @@
 
 - [Java 데이터 타입](./Java/Java_데이터_타입.md)
 
+- [OOP](./Java/OOP.md)
+
+- [SOLID](./Java/SOLID.md)
+
+- [Staic 멤버 vs Non-Static 멤버](./Java/Static_멤버와_Non_Static_멤버.md)
+
 
 ## 스프링 핵심 원리 - 기본편
 
