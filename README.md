@@ -50,6 +50,10 @@
 
 - [Staic 멤버 vs Non-Static 멤버](./Java/Static_멤버와_Non_Static_멤버.md)
 
+- [main 메서드가 static인 이유](./Java/Java_main_메서드가_static인_이유.md)
+
+- [final 키워드](./Java/Java_final_키워드.md)
+
 
 ## 스프링 핵심 원리 - 기본편
 
