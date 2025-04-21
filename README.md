@@ -58,6 +58,8 @@
 
 - [오버로딩 vs 오버라이딩](./Java/오버로딩_오버라이딩.md)
 
+- [Call By Value vs Call By Reference](./Java/Call_By_Value_vs_Call_By_Reference.md)
+
 ## 스프링 핵심 원리 - 기본편
 
 - [01 스프링과 객체 지향 설계](./스프링_핵심_원리_기본/01_스프링과_객체_지향_설계.md)
