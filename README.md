@@ -30,6 +30,8 @@
 
 - [GET 메서드와 POST 메서드](./Network/GET_메서드와_POST_메서드.md)
 
+- [PUT vs PATCH](./Network/PUT과_PATCH.md)
+
 - [쿠키와 세션](./Network/쿠키와_세션.md)
 
 - [REST와 RESTful API](./Network/REST와_RESTful_API.md)
