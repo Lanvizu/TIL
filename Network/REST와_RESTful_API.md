@@ -114,3 +114,10 @@ REST는 웹의 기본 원칙을 따르는 소프트웨어 아키텍처 스타일
 ---
 
 REST는 웹의 기본 원칙을 따르는 아키텍처 스타일, RESTful API는 이를 구현한 표준화된 인터페이스
+
+REST API vs RESTful API
+
+**REST API** - REST 기반으로 만든 API (정확히는 범주가 넓음)
+
+**RESTful API** - REST 원칙을 **충실히** 따르는 API (정확히는 이상적인 형태)
+
