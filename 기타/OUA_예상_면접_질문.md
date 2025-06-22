@@ -236,8 +236,6 @@
     
 </details>
 
-* 서비스 레이어에서 발생 가능한 Race Condition 외에 또 어떤 케이스가 있었나요?
-
 >"TransactionSynchronizationManager를 사용한 이유는 무엇인가요? finally 블록에서 락 해제하면 안 되나요?"
 → 트랜잭션 커밋 전에 락을 해제하면 실제 DB 반영 전에 다른 스레드가 입찰을 시도해 충돌이 발생할 수 있음.
 
